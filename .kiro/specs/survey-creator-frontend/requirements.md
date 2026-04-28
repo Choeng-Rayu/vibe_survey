@@ -8,13 +8,14 @@ This document specifies the requirements for the advertiser side of the platform
 
 ## Glossary
 
-- **Advertiser**: A company or organization that creates survey campaigns to collect user feedback
+- **Advertiser**: A company, organization, or individual that creates survey campaigns to collect user feedback
 - **Campaign**: A complete advertising initiative including audience targeting, survey content, budget allocation, and execution timeline
 - **Survey_Builder**: The drag-and-drop interface or image for creating survey questions and logic
 - **Audience_Targeting_Engine**: The system that defines and estimates target demographic segments
 - **Budget_Manager**: The system that tracks spending, enforces caps, and manages quotas
 - **Analytics_Dashboard**: The interface displaying campaign performance metrics and response data
 - **Qualified_Response**: A survey response that passes fraud detection and meets quality standards
+- **Qualification_Detection_System**: The system that automatically determines if a respondent meets platform and campaign criteria
 - **CPR**: Cost Per (qualified) Response - the pricing model for the platform
 - **Screener**: Pre-survey questions that determine respondent eligibility
 - **Attention_Check**: Platform-inserted questions that verify respondent engagement
@@ -23,30 +24,28 @@ This document specifies the requirements for the advertiser side of the platform
 - **Skip_Logic**: Survey flow control that skips questions based on previous answers
 - **Branching_Logic**: Survey flow control that shows additional questions based on previous answers
 - **Admin**: Platform administrator who reviews and approves campaigns and advertisers
-- **Business_License**: Official documentation verifying company legitimacy
 - **Campaign_Lifecycle**: The progression of states from draft through completion
 - **NPS**: Net Promoter Score - a metric measuring customer loyalty (0-10 scale)
 - **Likert_Scale**: A rating scale typically using agreement levels (strongly disagree to strongly agree)
 - **Cross_Tabulation**: Analysis comparing responses across different demographic segments
 - **API_Backend**: The NestJS backend service that handles all data operations
 - **Prepaid_Credit_Wallet**: An account balance system for pre-funding campaigns
-- **Team_Role**: Permission level assigned to team members (Billing Contact, Campaign Manager, Analyst)
 
 ## Requirements
 
 ### Requirement 1: Advertiser Registration and Verification
 
-**User Story:** As a company representative, I want to register my organization and verify my business legitimacy, so that I can create survey campaigns on the platform.
+**User Story:** As an advertiser (company, organization, or individual), I want to register and verify my legitimacy, so that I can create survey campaigns on the platform.
 
 #### Acceptance Criteria
 
-1. WHEN an advertiser submits a registration form with company details, THE Registration_System SHALL create a pending advertiser account
-2. WHEN an advertiser uploads a business license document, THE Registration_System SHALL store the document and flag the account for admin review
-3. THE Registration_System SHALL require company name, business email, phone number, business address, and business license upload
+1. WHEN an advertiser submits a registration form with account details, THE Registration_System SHALL create a pending advertiser account
+2. WHEN an advertiser uploads verification documentation, THE Registration_System SHALL store the document and flag the account for admin review
+3. THE Registration_System SHALL require advertiser name, email, phone number, address, and verification documentation upload
 4. WHEN an admin reviews a pending advertiser account, THE Admin_Interface SHALL provide options to approve or reject with reason
 5. WHEN an advertiser account is approved, THE Notification_System SHALL send an email notification with login credentials
 6. WHEN an advertiser account is rejected, THE Notification_System SHALL send an email notification with the rejection reason
-7. THE Registration_System SHALL validate that the business email domain matches the company domain
+7. THE Registration_System SHALL validate email address format and domain authenticity
 8. WHEN an advertiser attempts to create a campaign before approval, THE Campaign_System SHALL display a pending verification message
 
 ### Requirement 2: Campaign Creation Wizard
@@ -115,17 +114,17 @@ This document specifies the requirements for the advertiser side of the platform
 
 ### Requirement 6: Survey Builder - Screener and Quality Controls
 
-**User Story:** As an advertiser, I want to create screener questions and ensure response quality, so that I only pay for qualified, attentive respondents.
+**User Story:** As an advertiser, I want the system to automatically detect qualified respondents and ensure response quality, so that I only pay for qualified, attentive respondents.
 
 #### Acceptance Criteria
 
 1. THE Survey_Builder SHALL provide a separate screener section that appears before the main survey
-2. THE Survey_Builder SHALL allow defining disqualification criteria based on screener answers
+2. THE Qualification_Detection_System SHALL automatically determine respondent qualification based on screener answers and platform criteria
 3. THE Attention_Check_System SHALL automatically insert attention check questions at random positions in the survey
 4. THE Survey_Builder SHALL prevent advertisers from disabling or removing platform-inserted attention checks
 5. THE Survey_Builder SHALL display a notice indicating where attention checks will be inserted
 6. WHEN an advertiser creates a screener question, THE Survey_Builder SHALL allow marking specific answers as disqualifying
-7. THE Survey_Builder SHALL support screener quota limits that disqualify respondents when segment quotas are filled
+7. THE Qualification_Detection_System SHALL support screener quota limits that disqualify respondents when segment quotas are filled
 
 ### Requirement 7: Survey Builder - Preview and Collaboration
 
@@ -224,24 +223,7 @@ This document specifies the requirements for the advertiser side of the platform
 8. THE Export_System SHALL include metadata in exports such as campaign name, date range, total responses, and completion rate
 9. THE Export_System SHALL allow filtering export data by date range, demographic segment, and response quality
 
-### Requirement 13: Team Management
-
-**User Story:** As an advertiser account owner, I want to add team members with specific roles, so that multiple people can collaborate on campaigns with appropriate permissions.
-
-#### Acceptance Criteria
-
-1. THE Team_Management_System SHALL support adding multiple users to an advertiser account
-2. THE Team_Management_System SHALL provide three role types: Billing Contact, Campaign Manager, and Analyst
-3. WHEN a user has the Billing Contact role, THE Team_Management_System SHALL grant access to billing, invoices, and payment methods
-4. WHEN a user has the Campaign Manager role, THE Team_Management_System SHALL grant access to create, edit, and manage campaigns
-5. WHEN a user has the Analyst role, THE Team_Management_System SHALL grant read-only access to analytics and export capabilities
-6. THE Team_Management_System SHALL allow account owners to invite team members via email
-7. WHEN a team member invitation is sent, THE Notification_System SHALL send an email with registration link
-8. THE Team_Management_System SHALL allow account owners to modify team member roles
-9. THE Team_Management_System SHALL allow account owners to remove team members from the account
-10. THE Team_Management_System SHALL display audit logs showing which team member performed each action
-
-### Requirement 14: Billing and Invoicing
+### Requirement 13: Billing and Invoicing
 
 **User Story:** As an advertiser, I want to manage my billing and view invoices, so that I can track spending and make payments.
 
@@ -255,10 +237,10 @@ This document specifies the requirements for the advertiser side of the platform
 6. THE Billing_System SHALL send budget alert notifications when prepaid credit wallet balance falls below 20% of average monthly spending
 7. THE Billing_System SHALL provide invoice history with download capability
 8. THE Billing_System SHALL support multiple payment methods including credit card, bank transfer, and wire transfer
-9. WHEN an invoice is generated, THE Notification_System SHALL send an email notification to users with Billing Contact role
+9. WHEN an invoice is generated, THE Notification_System SHALL send an email notification to the advertiser
 10. THE Billing_System SHALL display spending trends and forecasts based on active campaign budgets
 
-### Requirement 15: Authentication and Security
+### Requirement 14: Authentication and Security
 
 **User Story:** As an advertiser, I want secure access to my account, so that my campaign data and business information remain protected.
 
@@ -274,7 +256,7 @@ This document specifies the requirements for the advertiser side of the platform
 8. THE API_Backend SHALL validate authentication tokens on every request
 9. THE API_Backend SHALL enforce role-based access control for all endpoints
 
-### Requirement 16: Data Communication with Backend
+### Requirement 15: Data Communication with Backend
 
 **User Story:** As the frontend application, I want to communicate with the NestJS backend for all data operations, so that data access is centralized and secure.
 
@@ -290,7 +272,7 @@ This document specifies the requirements for the advertiser side of the platform
 8. WHEN the API_Backend is unavailable, THE Frontend_Application SHALL display an offline message and queue non-critical requests
 9. THE Frontend_Application SHALL include authentication tokens in all API requests
 
-### Requirement 17: User Interface and Experience
+### Requirement 16: User Interface and Experience
 
 **User Story:** As an advertiser, I want an intuitive and responsive interface, so that I can efficiently create and manage campaigns.
 
@@ -307,22 +289,7 @@ This document specifies the requirements for the advertiser side of the platform
 9. THE Frontend_Application SHALL display contextual help tooltips for complex features
 10. THE Frontend_Application SHALL persist user preferences such as theme and dashboard layout
 
-### Requirement 18: Campaign Review and Approval
-
-**User Story:** As an admin, I want to review and approve advertiser campaigns before they go live, so that I can ensure platform quality and policy compliance.
-
-#### Acceptance Criteria
-
-1. WHEN an advertiser submits a campaign, THE Admin_Interface SHALL add the campaign to the review queue
-2. THE Admin_Interface SHALL display campaign details including objective, audience targeting, survey content, and budget
-3. THE Admin_Interface SHALL provide options to approve, reject, or request modifications
-4. WHEN an admin rejects a campaign, THE Admin_Interface SHALL require a rejection reason
-5. WHEN an admin approves or rejects a campaign, THE Notification_System SHALL send an email to the advertiser
-6. THE Admin_Interface SHALL display review history showing all admin actions and timestamps
-7. THE Campaign_Lifecycle_System SHALL support auto-approval for verified advertisers based on account standing and history
-8. WHEN a campaign is flagged for policy violation, THE Admin_Interface SHALL highlight the specific policy concern
-
-### Requirement 19: Real-Time Updates and Notifications
+### Requirement 17: Real-Time Updates and Notifications
 
 **User Story:** As an advertiser, I want to receive real-time updates about my campaigns, so that I can respond quickly to important events.
 
@@ -336,7 +303,7 @@ This document specifies the requirements for the advertiser side of the platform
 6. THE Frontend_Application SHALL display a notification badge showing unread notification count
 7. THE Notification_System SHALL maintain notification history accessible from the user interface
 
-### Requirement 20: Survey Response Parser and Validator
+### Requirement 18: Survey Response Parser and Validator
 
 **User Story:** As the system, I want to parse and validate survey responses from the backend, so that the analytics dashboard displays accurate and properly formatted data.
 
