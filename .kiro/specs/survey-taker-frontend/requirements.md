@@ -28,6 +28,18 @@ The Survey Taker Frontend is the user-facing web application for a Survey-as-Ads
 - **Attention_Check**: A survey question designed to detect inattentive respondents
 - **Branching_Logic**: Survey flow that changes based on previous answers
 - **Match_Score**: A calculated value indicating survey relevance to the user
+- **Fraud_Confidence_Score**: A numerical value from 0 to 100 indicating the likelihood that a survey response is fraudulent or low-quality
+- **Behavior_Tracker**: The component collecting user interaction data during survey completion
+- **Response_Time**: The duration between question display and answer submission
+- **Click_Pattern**: The sequence and timing of user clicks during survey interaction
+- **Interaction_Depth**: Metrics measuring mouse movement, scrolling, and focus events
+- **Quality_Label**: A categorical classification of response quality (High Quality, Suspicious, Likely Fraud)
+- **Fraud_Score_Calculator**: The backend service computing Fraud_Confidence_Score from behavioral signals
+- **Behavioral_Signal**: A measurable indicator of user engagement used in fraud detection
+- **Human_Threshold**: The minimum time required for a human to read and respond to a question
+- **Auto_Clicker**: Automated software that generates rapid, uniform click patterns
+- **Straight_Line_Response**: A pattern where the same answer option is selected for all questions
+- **Honeypot_Question**: A hidden question that legitimate users won't see but bots will answer
 
 ## Requirements
 
@@ -426,16 +438,231 @@ The Survey Taker Frontend is the user-facing web application for a Survey-as-Ads
 3. THE Survey_Taker_Frontend SHALL display age requirements clearly on survey detail pages
 4. THE Survey_Taker_Frontend SHALL prevent URL manipulation to bypass age restrictions by validating on survey load
 
+### Requirement 31: Behavioral Data Collection
+
+**User Story:** As a fraud prevention specialist, I want to collect user interaction behavior during survey completion, so that I can detect fraudulent or low-quality responses.
+
+#### Acceptance Criteria
+
+1. WHEN a user starts a survey, THE Behavior_Tracker SHALL record the survey start timestamp
+2. WHEN a user views a question, THE Behavior_Tracker SHALL record the question view timestamp
+3. WHEN a user submits an answer, THE Behavior_Tracker SHALL record the answer submission timestamp and calculate Response_Time
+4. WHILE a user is taking a survey, THE Behavior_Tracker SHALL record mouse movement events with coordinates and timestamps
+5. WHILE a user is taking a survey, THE Behavior_Tracker SHALL record scroll events with scroll position and timestamps
+6. WHILE a user is taking a survey, THE Behavior_Tracker SHALL record focus and blur events for the survey window
+7. WHEN a user clicks on answer options, THE Behavior_Tracker SHALL record click timestamps to detect Click_Pattern
+8. WHEN a user completes a survey, THE Behavior_Tracker SHALL record the survey end timestamp and calculate total completion time
+9. THE Behavior_Tracker SHALL collect behavioral data without impacting survey performance or user experience
+10. THE Behavior_Tracker SHALL store behavioral data in a structured format for submission with survey responses
+
+### Requirement 32: Response Time Analysis
+
+**User Story:** As a fraud prevention specialist, I want to analyze response times per question and total survey duration, so that I can detect rushed or automated responses.
+
+#### Acceptance Criteria
+
+1. FOR EACH question answered, THE Behavior_Tracker SHALL calculate Response_Time as the duration between question display and answer submission
+2. THE Behavior_Tracker SHALL calculate average Response_Time across all questions in the survey
+3. THE Behavior_Tracker SHALL calculate total survey completion time from start to submission
+4. THE Behavior_Tracker SHALL flag questions answered in less than 500ms as below Human_Threshold
+5. THE Behavior_Tracker SHALL include Response_Time data for all questions in the behavioral metadata submitted with survey responses
+6. THE Behavior_Tracker SHALL handle edge cases including page refreshes and browser tab switches by recording interruption events
+
+### Requirement 33: Click Pattern Detection
+
+**User Story:** As a fraud prevention specialist, I want to detect uniform or rapid click patterns, so that I can identify Auto_Clicker usage and bot behavior.
+
+#### Acceptance Criteria
+
+1. WHEN a user clicks on answer options, THE Behavior_Tracker SHALL record the timestamp of each click
+2. THE Behavior_Tracker SHALL calculate time intervals between consecutive clicks
+3. THE Behavior_Tracker SHALL detect uniform click intervals by calculating standard deviation of inter-click times
+4. THE Behavior_Tracker SHALL flag Click_Pattern as suspicious when standard deviation is below 50ms across 5 or more consecutive clicks
+5. THE Behavior_Tracker SHALL detect rapid sequential clicks when average inter-click time is below 200ms
+6. THE Behavior_Tracker SHALL include Click_Pattern analysis in the behavioral metadata submitted with survey responses
+
+### Requirement 34: Answer Pattern Analysis
+
+**User Story:** As a fraud prevention specialist, I want to detect repetitive answer patterns, so that I can identify low-effort or random responses.
+
+#### Acceptance Criteria
+
+1. WHEN a user completes a survey, THE Behavior_Tracker SHALL analyze answer patterns across all questions
+2. THE Behavior_Tracker SHALL detect Straight_Line_Response patterns where the same answer option is selected for all questions
+3. THE Behavior_Tracker SHALL detect straight-line patterns within question subsets for matrix questions
+4. THE Behavior_Tracker SHALL calculate answer variance to detect random or inconsistent response patterns
+5. THE Behavior_Tracker SHALL flag surveys where more than 80% of questions have identical answer positions
+6. THE Behavior_Tracker SHALL include answer pattern analysis in the behavioral metadata submitted with survey responses
+
+### Requirement 35: Interaction Depth Measurement
+
+**User Story:** As a fraud prevention specialist, I want to measure user engagement through mouse movement and scrolling, so that I can detect passive or automated behavior.
+
+#### Acceptance Criteria
+
+1. WHILE a user is taking a survey, THE Behavior_Tracker SHALL track total mouse movement distance in pixels
+2. THE Behavior_Tracker SHALL track the number of unique mouse positions recorded during survey completion
+3. THE Behavior_Tracker SHALL track scroll events and calculate total scroll distance
+4. THE Behavior_Tracker SHALL flag surveys with zero mouse movement as having low Interaction_Depth
+5. THE Behavior_Tracker SHALL flag surveys with zero scroll events on questions requiring scrolling as having low Interaction_Depth
+6. THE Behavior_Tracker SHALL detect window focus loss events and record total time spent with survey window out of focus
+7. THE Behavior_Tracker SHALL include Interaction_Depth metrics in the behavioral metadata submitted with survey responses
+
+### Requirement 36: Fraud Confidence Score Calculation
+
+**User Story:** As a platform operator, I want to calculate a Fraud_Confidence_Score for each survey response, so that I can filter or flag low-quality data.
+
+#### Acceptance Criteria
+
+1. WHEN a survey is submitted, THE Fraud_Score_Calculator SHALL receive all behavioral metadata from the Behavior_Tracker
+2. THE Fraud_Score_Calculator SHALL compute a weighted score based on Response_Time analysis with weight of 25%
+3. THE Fraud_Score_Calculator SHALL compute a weighted score based on Click_Pattern analysis with weight of 20%
+4. THE Fraud_Score_Calculator SHALL compute a weighted score based on answer pattern analysis with weight of 20%
+5. THE Fraud_Score_Calculator SHALL compute a weighted score based on Interaction_Depth metrics with weight of 20%
+6. THE Fraud_Score_Calculator SHALL compute a weighted score based on Attention_Check results with weight of 15%
+7. THE Fraud_Score_Calculator SHALL normalize the combined weighted score to a Fraud_Confidence_Score between 0 and 100
+8. THE Fraud_Score_Calculator SHALL store the Fraud_Confidence_Score with the survey response in the database
+9. FOR ALL valid survey responses, THE Fraud_Score_Calculator SHALL produce a Fraud_Confidence_Score within the range 0 to 100
+
+### Requirement 37: Quality Label Assignment
+
+**User Story:** As a data analyst, I want survey responses categorized by quality, so that I can easily filter and analyze data.
+
+#### Acceptance Criteria
+
+1. WHEN a Fraud_Confidence_Score is calculated, THE Fraud_Score_Calculator SHALL assign a Quality_Label based on score thresholds
+2. THE Fraud_Score_Calculator SHALL assign Quality_Label "High Quality" for Fraud_Confidence_Score between 0 and 30
+3. THE Fraud_Score_Calculator SHALL assign Quality_Label "Suspicious" for Fraud_Confidence_Score between 31 and 60
+4. THE Fraud_Score_Calculator SHALL assign Quality_Label "Likely Fraud" for Fraud_Confidence_Score between 61 and 100
+5. THE Fraud_Score_Calculator SHALL store the Quality_Label with the survey response in the database
+6. THE Survey_Taker_Frontend SHALL display Quality_Label in the survey history for transparency
+
+### Requirement 38: Fraud Score Display
+
+**User Story:** As a user, I want to understand my response quality metrics, so that I can improve my survey-taking behavior and maintain good standing.
+
+#### Acceptance Criteria
+
+1. WHEN a user views their survey history, THE Survey_Taker_Frontend SHALL display the Quality_Label for each completed survey
+2. THE Survey_Taker_Frontend SHALL provide an information tooltip explaining what Quality_Label means
+3. WHERE a response is marked "Suspicious" or "Likely Fraud", THE Survey_Taker_Frontend SHALL display tips for improving response quality
+4. THE Survey_Taker_Frontend SHALL display aggregate quality metrics including average quality score and percentage of high-quality responses
+5. THE Survey_Taker_Frontend SHALL not display the raw Fraud_Confidence_Score to users to prevent gaming the system
+
+### Requirement 39: Fraud-Based Response Handling
+
+**User Story:** As a platform operator, I want to handle survey responses differently based on Fraud_Confidence_Score, so that I can maintain data quality while being fair to users.
+
+#### Acceptance Criteria
+
+1. WHEN a survey response has Fraud_Confidence_Score between 0 and 60, THE Survey_Taker_Frontend SHALL display Pending_Points normally
+2. WHEN a survey response has Fraud_Confidence_Score between 61 and 80, THE Survey_Taker_Frontend SHALL display a warning that the response is under extended review
+3. WHEN a survey response has Fraud_Confidence_Score above 80, THE Survey_Taker_Frontend SHALL display a message that the response was flagged for quality review
+4. THE Survey_Taker_Frontend SHALL allow users to view behavioral feedback for flagged responses
+5. WHERE a response is rejected due to high Fraud_Confidence_Score, THE Survey_Taker_Frontend SHALL provide specific feedback on which behavioral signals triggered the flag
+
+### Requirement 40: Honeypot Question Implementation
+
+**User Story:** As a fraud prevention specialist, I want to include hidden honeypot questions in surveys, so that I can detect bot submissions.
+
+#### Acceptance Criteria
+
+1. WHERE a survey includes Honeypot_Question elements, THE Survey_Engine SHALL render them with CSS display:none or visibility:hidden
+2. THE Survey_Engine SHALL not apply required validation to Honeypot_Question elements
+3. WHEN a survey is submitted, THE Survey_Engine SHALL include Honeypot_Question responses in the behavioral metadata
+4. THE Fraud_Score_Calculator SHALL increase Fraud_Confidence_Score by 30 points if any Honeypot_Question is answered
+5. THE Survey_Engine SHALL position Honeypot_Question elements naturally in the DOM to avoid detection by sophisticated bots
+
+### Requirement 41: Adaptive Fraud Thresholds
+
+**User Story:** As a platform operator, I want fraud detection thresholds to adapt based on survey complexity, so that short surveys don't unfairly penalize users.
+
+#### Acceptance Criteria
+
+1. WHEN calculating Fraud_Confidence_Score, THE Fraud_Score_Calculator SHALL receive survey metadata including question count and estimated completion time
+2. THE Fraud_Score_Calculator SHALL adjust Human_Threshold based on question complexity and length
+3. THE Fraud_Score_Calculator SHALL reduce Response_Time weight for surveys with fewer than 5 questions
+4. THE Fraud_Score_Calculator SHALL adjust expected total completion time based on survey estimated duration
+5. THE Fraud_Score_Calculator SHALL apply more lenient thresholds for surveys with primarily multiple-choice questions versus text-heavy questions
+
+### Requirement 42: Fraud Detection Analytics Dashboard
+
+**User Story:** As a platform administrator, I want to view fraud detection metrics and trends, so that I can monitor system effectiveness and adjust thresholds.
+
+#### Acceptance Criteria
+
+1. THE Survey_Taker_Frontend SHALL provide an admin dashboard displaying fraud detection statistics
+2. THE dashboard SHALL display distribution of Fraud_Confidence_Score across all responses
+3. THE dashboard SHALL display trends over time for average Fraud_Confidence_Score and Quality_Label distribution
+4. THE dashboard SHALL display top behavioral signals contributing to high fraud scores
+5. THE dashboard SHALL allow filtering by survey, date range, and user Trust_Tier
+6. THE dashboard SHALL display false positive rate based on manual review outcomes
+
+### Requirement 43: Manual Review Interface
+
+**User Story:** As a quality assurance specialist, I want to manually review flagged responses, so that I can validate fraud detection accuracy and provide feedback.
+
+#### Acceptance Criteria
+
+1. THE Survey_Taker_Frontend SHALL provide a manual review queue showing responses with Fraud_Confidence_Score above 60
+2. FOR EACH flagged response, THE review interface SHALL display the survey questions, user answers, and all behavioral metadata
+3. THE review interface SHALL display visualizations of Response_Time, Click_Pattern, and Interaction_Depth metrics
+4. THE review interface SHALL allow reviewers to mark responses as "Confirmed Fraud", "False Positive", or "Uncertain"
+5. WHEN a reviewer marks a response as "False Positive", THE Survey_Taker_Frontend SHALL approve the Pending_Points and update the user's Trust_Tier positively
+6. THE review interface SHALL allow reviewers to add notes explaining their decision
+
+### Requirement 44: Fraud Detection Feedback Loop
+
+**User Story:** As a machine learning engineer, I want to collect manual review outcomes, so that I can improve fraud detection algorithms over time.
+
+#### Acceptance Criteria
+
+1. WHEN a manual review is completed, THE Survey_Taker_Frontend SHALL store the review outcome with the original behavioral data
+2. THE Survey_Taker_Frontend SHALL provide an export function for behavioral data and review outcomes in CSV or JSON format
+3. THE Survey_Taker_Frontend SHALL track fraud detection accuracy metrics including precision, recall, and F1 score
+4. THE Survey_Taker_Frontend SHALL display model performance metrics in the admin dashboard
+5. THE Survey_Taker_Frontend SHALL support A/B testing of different fraud detection threshold configurations
+
+### Requirement 45: User Appeal Process
+
+**User Story:** As a user whose response was flagged, I want to appeal the decision, so that I can have my case reviewed if I believe it was flagged incorrectly.
+
+#### Acceptance Criteria
+
+1. WHERE a survey response is rejected due to high Fraud_Confidence_Score, THE Survey_Taker_Frontend SHALL display an "Appeal" button
+2. WHEN a user clicks "Appeal", THE Survey_Taker_Frontend SHALL display a form allowing the user to explain their case
+3. THE Survey_Taker_Frontend SHALL submit the appeal to the manual review queue with high priority
+4. THE Survey_Taker_Frontend SHALL display appeal status (Pending, Under Review, Resolved) in the survey history
+5. WHEN an appeal is resolved, THE Survey_Taker_Frontend SHALL notify the user of the outcome and any points awarded
+
 ---
 
 ## Notes
 
-This requirements document covers the complete Survey Taker Frontend feature with 30 requirements and 180+ acceptance criteria. All requirements follow EARS patterns and INCOSE quality rules. The requirements are structured to support property-based testing where applicable, particularly for:
+This requirements document covers the complete Survey Taker Frontend feature with 45 requirements and 260+ acceptance criteria. All requirements follow EARS patterns and INCOSE quality rules.
+
+**Fraud Detection Feature (Requirements 31-45):**
+The fraud detection and confidence scoring system provides comprehensive behavioral analysis to detect low-quality and fraudulent survey responses. The system:
+
+- Collects behavioral signals including response times, click patterns, answer patterns, and interaction depth
+- Calculates a Fraud_Confidence_Score (0-100) using weighted behavioral signals
+- Assigns Quality_Labels (High Quality, Suspicious, Likely Fraud) based on score thresholds
+- Implements adaptive thresholds based on survey complexity
+- Provides manual review workflows and user appeal processes
+- Includes honeypot questions for bot detection
+- Supports continuous improvement through feedback loops
+
+The requirements are structured to support property-based testing where applicable, particularly for:
 
 - Form validation logic (registration, profile, withdrawal)
 - Survey response handling and auto-save
 - State management and data synchronization
 - Error handling and retry logic
 - Responsive layout calculations
+- **Fraud score calculation and normalization (Requirements 36-37)**
+- **Behavioral signal aggregation and weighting (Requirement 36)**
+- **Threshold adaptation based on survey parameters (Requirement 41)**
+- **Round-trip properties for behavioral data serialization (Requirement 31)**
 
 The document is ready for review and iteration before proceeding to the design phase.
+
