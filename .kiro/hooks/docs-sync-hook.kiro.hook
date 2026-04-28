@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Automatically updates README and documentation when TypeScript source files, configuration files, or package.json files are modified",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.jsx",
+      "package.json",
+      "tsconfig.json",
+      "nest-cli.json",
+      "next.config.ts",
+      "*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file or configuration has been modified. Please review the changes and update the relevant documentation in README.md files or .kiro/specs/ documentation to reflect any new features, API changes, or architectural updates. Focus on keeping the documentation accurate and up-to-date with the current implementation."
+  }
+}
