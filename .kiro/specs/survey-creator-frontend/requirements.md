@@ -2,15 +2,30 @@
 
 ## Introduction
 
-The Survey Creator Frontend is the advertiser-facing interface for a Survey-as-Ads platform. This system enables companies to create advertising campaigns that incorporate surveys, manage budgets, target specific audiences, and analyze response data. The platform operates as a three-sided marketplace connecting advertisers, users (survey respondents), and the platform itself.
+The Survey Creator Frontend is the advertiser-facing interface for a Survey-as-Ads platform with integrated AI Survey Builder Agent capabilities. This system enables companies to create advertising campaigns that incorporate surveys through natural language interaction, manage budgets, target specific audiences, and analyze response data. The platform operates as a three-sided marketplace connecting advertisers, users (survey respondents), and the platform itself.
 
-This document specifies the requirements for the advertiser side of the platform, covering the complete advertiser journey from registration through campaign creation, execution, and analytics.
+The frontend integrates seamlessly with the AI Survey Builder Agent, providing natural language survey creation, intelligent import normalization, multi-format export, AI-powered enhancements, and conversational survey modification. All AI interactions are presented through a diff-based preview system ensuring advertisers maintain control over their survey content.
+
+This document specifies the requirements for the advertiser side of the platform, covering the complete advertiser journey from registration through AI-assisted campaign creation, execution, and analytics.
 
 ## Glossary
 
 - **Advertiser**: A company, organization, or individual that creates survey campaigns to collect user feedback
 - **Campaign**: A complete advertising initiative including audience targeting, survey content, budget allocation, and execution timeline
-- **Survey_Builder**: The drag-and-drop interface for creating survey questions and logic
+- **Survey_Builder**: The drag-and-drop interface integrated with AI agent for creating survey questions and logic
+- **AI_Agent_Panel**: The chat interface component for natural language interaction with the AI Survey Builder Agent
+- **AI_Agent_Mode**: One of six operational modes (Generate, Enhance, Normalize, Translate, Analyze, Modify) displayed in the UI
+- **Diff_Viewer**: UI component that displays proposed AI changes in a side-by-side comparison before applying them
+- **Conversation_Context**: The maintained history of user interactions and AI responses within a survey editing session
+- **AI_Action**: A discrete, surgical modification operation performed by the AI (e.g., add_question, update_logic, reorder_questions)
+- **Import_Wizard**: The Excel upload interface with AI normalization capabilities
+- **Export_Panel**: The multi-format export interface supporting Excel, PDF, and JSON formats
+- **Template_Gallery**: The AI-powered template suggestion and modification interface
+- **Version_History_Panel**: The interface displaying AI-generated changes and rollback capabilities
+- **AI_Processing_State**: Loading and progress indicators for AI operations
+- **AI_Error_Handler**: Specialized error handling for AI failures and recovery options
+- **Rate_Limit_Display**: UI component showing remaining AI request quota
+- **Security_Guard**: Frontend validation for prompt injection prevention
 - **Audience_Targeting_Engine**: The system that defines and estimates target demographic segments
 - **Budget_Manager**: The system that tracks spending, enforces caps, and manages quotas
 - **Analytics_Dashboard**: The interface displaying campaign performance metrics and response data
@@ -79,38 +94,45 @@ This document specifies the requirements for the advertiser side of the platform
 8. WHEN targeting criteria result in an audience size below the minimum threshold, THE Audience_Targeting_Engine SHALL display a warning message
 9. THE Audience_Targeting_Engine SHALL allow combining multiple criteria with AND/OR logic operators
 
-### Requirement 4: Survey Builder - Question Management
+### Requirement 4: AI-Integrated Survey Builder - Question Management
 
-**User Story:** As an advertiser, I want to build surveys with various question types using a drag-and-drop interface, so that I can collect the specific data I need.
+**User Story:** As an advertiser, I want to build surveys with AI assistance using natural language commands and a drag-and-drop interface, so that I can efficiently create surveys without manual complexity.
 
 #### Acceptance Criteria
 
-1. THE Survey_Builder SHALL provide a drag-and-drop interface for adding, reordering, and removing questions
-2. THE Survey_Builder SHALL support the following question types: single choice, multiple choice, checkbox, short text, long text, rating scale (1-5 and 1-10), NPS (0-10), Likert scale, image choice, matrix/grid, yes/no, ranking, slider, and date/time picker
-3. WHEN an advertiser adds a question, THE Survey_Builder SHALL assign a unique question identifier
-4. THE Survey_Builder SHALL allow marking questions as required or optional
-5. THE Survey_Builder SHALL allow setting character limits on text answer fields
-6. THE Survey_Builder SHALL support image and video embedding within questions
-7. WHEN an advertiser enables question randomization, THE Survey_Builder SHALL indicate that question order will vary for respondents
-8. WHEN an advertiser enables answer randomization for a multiple choice question, THE Survey_Builder SHALL indicate that answer order will vary for respondents
-9. THE Survey_Builder SHALL calculate and display estimated survey completion time based on question count and types
-10. THE Survey_Builder SHALL support question duplication for rapid survey creation
+1. THE Survey_Builder SHALL integrate with the AI_Agent_Panel for natural language survey creation and modification
+2. THE Survey_Builder SHALL provide a drag-and-drop interface for adding, reordering, and removing questions
+3. THE Survey_Builder SHALL support the following question types: single choice, multiple choice, checkbox, short text, long text, rating scale (1-5 and 1-10), NPS (0-10), Likert scale, image choice, matrix/grid, yes/no, ranking, slider, and date/time picker
+4. WHEN an advertiser provides a natural language prompt, THE AI_Agent_Panel SHALL generate survey modifications and display them in the Diff_Viewer
+5. WHEN an advertiser adds a question manually, THE Survey_Builder SHALL assign a unique question identifier
+6. THE Survey_Builder SHALL allow marking questions as required or optional
+7. THE Survey_Builder SHALL allow setting character limits on text answer fields
+8. THE Survey_Builder SHALL support image and video embedding within questions
+9. WHEN an advertiser enables question randomization, THE Survey_Builder SHALL indicate that question order will vary for respondents
+10. WHEN an advertiser enables answer randomization for a multiple choice question, THE Survey_Builder SHALL indicate that answer order will vary for respondents
+11. THE Survey_Builder SHALL calculate and display estimated survey completion time based on question count and types
+12. THE Survey_Builder SHALL support question duplication for rapid survey creation
+13. THE AI_Agent_Panel SHALL display the current AI_Agent_Mode (Generate, Modify, Enhance, Normalize, Translate, Analyze)
+14. THE Survey_Builder SHALL maintain Conversation_Context across the survey editing session
 
-### Requirement 5: Survey Builder - Logic Flow Editor
+### Requirement 5: AI-Enhanced Logic Flow Editor
 
-**User Story:** As an advertiser, I want to create conditional survey flows with branching and skip logic, so that respondents see relevant questions based on their answers.
+**User Story:** As an advertiser, I want to create conditional survey flows with AI assistance and visual editing, so that I can build complex logic without manual complexity.
 
 #### Acceptance Criteria
 
 1. THE Logic_Flow_Editor SHALL provide a visual representation of survey flow showing all questions and conditional paths
-2. THE Logic_Flow_Editor SHALL support skip logic rules in the format "IF answer equals X, THEN skip to question N"
-3. THE Logic_Flow_Editor SHALL support branching logic rules in the format "IF answer equals Y, THEN show sub-question Y1"
-4. THE Logic_Flow_Editor SHALL support quota-based branching in the format "IF demographic quota is full, THEN route to disqualification"
-5. WHEN an advertiser creates a logic rule, THE Logic_Flow_Editor SHALL validate that target questions exist
-6. WHEN an advertiser creates a logic rule, THE Logic_Flow_Editor SHALL detect and warn about circular logic paths
-7. THE Logic_Flow_Editor SHALL display all logic rules associated with each question in a summary panel
-8. THE Logic_Flow_Editor SHALL allow editing and deleting existing logic rules
-9. WHEN an advertiser deletes a question with associated logic rules, THE Logic_Flow_Editor SHALL prompt for confirmation and remove dependent rules
+2. THE Logic_Flow_Editor SHALL integrate with the AI_Agent_Panel for natural language logic creation
+3. THE Logic_Flow_Editor SHALL support skip logic rules in the format "IF answer equals X, THEN skip to question N"
+4. THE Logic_Flow_Editor SHALL support branching logic rules in the format "IF answer equals Y, THEN show sub-question Y1"
+5. THE Logic_Flow_Editor SHALL support quota-based branching in the format "IF demographic quota is full, THEN route to disqualification"
+6. WHEN an advertiser describes logic in natural language, THE AI_Agent_Panel SHALL generate the appropriate logic rules and display them in the Diff_Viewer
+7. WHEN an advertiser creates a logic rule, THE Logic_Flow_Editor SHALL validate that target questions exist
+8. WHEN an advertiser creates a logic rule, THE Logic_Flow_Editor SHALL detect and warn about circular logic paths
+9. THE Logic_Flow_Editor SHALL display all logic rules associated with each question in a summary panel
+10. THE Logic_Flow_Editor SHALL allow editing and deleting existing logic rules
+11. WHEN an advertiser deletes a question with associated logic rules, THE Logic_Flow_Editor SHALL prompt for confirmation and remove dependent rules
+12. THE AI_Agent_Panel SHALL suggest logic improvements when operating in Enhance mode
 
 ### Requirement 6: Survey Builder - Screener and Quality Controls
 
@@ -126,20 +148,23 @@ This document specifies the requirements for the advertiser side of the platform
 6. WHEN an advertiser creates a screener question, THE Survey_Builder SHALL allow marking specific answers as disqualifying
 7. THE Qualification_Detection_System SHALL support screener quota limits that disqualify respondents when segment quotas are filled
 
-### Requirement 7: Survey Builder - Preview and Collaboration
+### Requirement 7: AI-Enhanced Survey Preview and Collaboration
 
-**User Story:** As an advertiser, I want to preview my survey and collaborate with team members, so that I can ensure quality before launch.
+**User Story:** As an advertiser, I want to preview my survey with AI analysis and collaborate with team members, so that I can ensure quality before launch.
 
 #### Acceptance Criteria
 
 1. THE Survey_Preview SHALL display the survey in both desktop and mobile views
 2. THE Survey_Preview SHALL render all question types, logic flows, and randomization as respondents will experience them
 3. THE Survey_Preview SHALL allow test submissions that do not count toward campaign quotas or budgets
-4. THE Survey_Builder SHALL maintain version history of all survey edits
-5. THE Survey_Builder SHALL allow rolling back to previous survey versions
-6. WHEN multiple team members edit a survey simultaneously, THE Survey_Builder SHALL display active editors and prevent conflicting edits
-7. THE Survey_Builder SHALL provide a template library with pre-built survey structures for common use cases
-8. THE Survey_Builder SHALL allow duplicating existing campaigns to create new campaigns with similar structure
+4. THE Survey_Builder SHALL maintain Version_History_Panel of all survey edits including AI-generated changes
+5. THE Version_History_Panel SHALL display AI_Action details for each modification with timestamps and mode information
+6. THE Survey_Builder SHALL allow rolling back to previous survey versions
+7. WHEN multiple team members edit a survey simultaneously, THE Survey_Builder SHALL display active editors and prevent conflicting edits
+8. THE Template_Gallery SHALL provide AI-powered template suggestions based on campaign objectives
+9. THE Survey_Builder SHALL allow duplicating existing campaigns to create new campaigns with similar structure
+10. WHEN an advertiser requests survey analysis, THE AI_Agent_Panel SHALL operate in Analyze mode and provide quality feedback
+11. THE AI_Agent_Panel SHALL suggest improvements for question clarity, logic flow, and survey structure when in Enhance mode
 
 ### Requirement 8: Budget and Quota Management
 
@@ -256,25 +281,28 @@ This document specifies the requirements for the advertiser side of the platform
 8. THE API_Backend SHALL validate authentication tokens on every request
 9. THE API_Backend SHALL enforce role-based access control for all endpoints
 
-### Requirement 15: Data Communication with Backend
+### Requirement 15: Data Communication with Backend and AI Services
 
-**User Story:** As the frontend application, I want to communicate with the NestJS backend for all data operations, so that data access is centralized and secure.
+**User Story:** As the frontend application, I want to communicate with the NestJS backend and AI Survey Builder Agent for all data operations, so that data access is centralized and secure.
 
 #### Acceptance Criteria
 
 1. THE Frontend_Application SHALL send all data requests to the API_Backend
-2. THE Frontend_Application SHALL NOT access Supabase or any database directly
-3. WHEN the API_Backend returns an error response, THE Frontend_Application SHALL display user-friendly error messages
-4. THE Frontend_Application SHALL implement request retry logic with exponential backoff for failed requests
-5. THE Frontend_Application SHALL validate all user input using Zod schemas before sending to API_Backend
-6. THE Frontend_Application SHALL use TanStack Query for server state management and caching
-7. THE Frontend_Application SHALL use Zustand for client-side state management
-8. WHEN the API_Backend is unavailable, THE Frontend_Application SHALL display an offline message and queue non-critical requests
-9. THE Frontend_Application SHALL include authentication tokens in all API requests
+2. THE Frontend_Application SHALL send all AI requests to the AI Survey Builder Agent API endpoints
+3. THE Frontend_Application SHALL NOT access Supabase or any database directly
+4. WHEN the API_Backend or AI service returns an error response, THE Frontend_Application SHALL display user-friendly error messages
+5. THE Frontend_Application SHALL implement request retry logic with exponential backoff for failed requests
+6. THE Frontend_Application SHALL validate all user input using Zod schemas before sending to API_Backend
+7. THE Frontend_Application SHALL use TanStack Query for server state management and caching
+8. THE Frontend_Application SHALL use Zustand for client-side state management including AI conversation context
+9. WHEN the API_Backend or AI service is unavailable, THE Frontend_Application SHALL display an offline message and queue non-critical requests
+10. THE Frontend_Application SHALL include authentication tokens in all API requests
+11. THE Frontend_Application SHALL handle AI-specific error codes including rate limiting, prompt injection detection, and service unavailability
+12. THE Frontend_Application SHALL cache AI conversation context locally and sync with backend periodically
 
-### Requirement 16: User Interface and Experience
+### Requirement 16: AI-Enhanced User Interface and Experience
 
-**User Story:** As an advertiser, I want an intuitive and responsive interface, so that I can efficiently create and manage campaigns.
+**User Story:** As an advertiser, I want an intuitive and responsive interface with integrated AI capabilities, so that I can efficiently create and manage campaigns with AI assistance.
 
 #### Acceptance Criteria
 
@@ -282,28 +310,190 @@ This document specifies the requirements for the advertiser side of the platform
 2. THE Frontend_Application SHALL use Vite as the build tool
 3. THE Frontend_Application SHALL use Tailwind CSS and shadcn/ui for styling and components
 4. THE Frontend_Application SHALL be fully responsive supporting desktop, tablet, and mobile viewports
-5. THE Frontend_Application SHALL display loading states during asynchronous operations
-6. THE Frontend_Application SHALL display success and error notifications for user actions
+5. THE Frontend_Application SHALL display loading states during asynchronous operations including AI processing
+6. THE Frontend_Application SHALL display success and error notifications for user actions and AI operations
 7. THE Frontend_Application SHALL implement keyboard navigation for accessibility
 8. THE Frontend_Application SHALL meet WCAG 2.1 Level AA accessibility standards
-9. THE Frontend_Application SHALL display contextual help tooltips for complex features
-10. THE Frontend_Application SHALL persist user preferences such as theme and dashboard layout
+9. THE Frontend_Application SHALL display contextual help tooltips for complex features including AI capabilities
+10. THE Frontend_Application SHALL persist user preferences such as theme, dashboard layout, and AI interaction preferences
+11. THE Frontend_Application SHALL integrate AI_Agent_Panel, Diff_Viewer, Import_Wizard, Export_Panel, Template_Gallery, and Version_History_Panel components
+12. THE Frontend_Application SHALL provide seamless transitions between manual editing and AI-assisted editing modes
 
-### Requirement 17: Real-Time Updates and Notifications
+### Requirement 17: Real-Time Updates and AI Notifications
 
-**User Story:** As an advertiser, I want to receive real-time updates about my campaigns, so that I can respond quickly to important events.
+**User Story:** As an advertiser, I want to receive real-time updates about my campaigns and AI operations, so that I can respond quickly to important events.
 
 #### Acceptance Criteria
 
-1. THE Notification_System SHALL send email notifications for account approval, campaign approval, campaign rejection, budget warnings, campaign completion, and fraud alerts
-2. THE Frontend_Application SHALL display in-app notifications for real-time events
+1. THE Notification_System SHALL send email notifications for account approval, campaign approval, campaign rejection, budget warnings, campaign completion, fraud alerts, and AI operation failures
+2. THE Frontend_Application SHALL display in-app notifications for real-time events including AI processing completion
 3. THE Analytics_Dashboard SHALL update metrics every 30 seconds using polling or WebSocket connections
-4. WHEN a campaign is automatically paused, THE Notification_System SHALL send an immediate notification explaining the reason
-5. THE Notification_System SHALL allow advertisers to configure notification preferences for each event type
-6. THE Frontend_Application SHALL display a notification badge showing unread notification count
-7. THE Notification_System SHALL maintain notification history accessible from the user interface
+4. THE AI_Agent_Panel SHALL provide real-time updates during AI processing operations
+5. WHEN a campaign is automatically paused, THE Notification_System SHALL send an immediate notification explaining the reason
+6. WHEN AI operations complete or fail, THE Frontend_Application SHALL display immediate notifications
+7. THE Notification_System SHALL allow advertisers to configure notification preferences for each event type including AI events
+8. THE Frontend_Application SHALL display a notification badge showing unread notification count
+9. THE Notification_System SHALL maintain notification history accessible from the user interface
+10. THE Rate_Limit_Display SHALL update in real-time as AI requests are consumed
 
-### Requirement 18: Survey Response Parser and Validator
+### Requirement 18: AI Agent Panel Integration
+
+**User Story:** As an advertiser, I want to interact with an AI agent through natural language, so that I can create and modify surveys conversationally.
+
+#### Acceptance Criteria
+
+1. THE AI_Agent_Panel SHALL provide a chat interface with message input and conversation history
+2. THE AI_Agent_Panel SHALL display the current AI_Agent_Mode (Generate, Enhance, Normalize, Translate, Analyze, Modify)
+3. WHEN an advertiser submits a natural language prompt, THE AI_Agent_Panel SHALL send the request to the AI Survey Builder Agent API
+4. THE AI_Agent_Panel SHALL maintain Conversation_Context across the survey editing session
+5. THE AI_Agent_Panel SHALL display AI_Processing_State indicators during request processing
+6. WHEN the AI agent proposes changes, THE AI_Agent_Panel SHALL trigger the Diff_Viewer to display proposed modifications
+7. THE AI_Agent_Panel SHALL allow advertisers to accept or reject AI-proposed changes
+8. THE AI_Agent_Panel SHALL display error messages when AI requests fail with retry options
+9. THE AI_Agent_Panel SHALL validate user prompts using Security_Guard to prevent prompt injection
+10. THE AI_Agent_Panel SHALL display Rate_Limit_Display showing remaining AI request quota
+
+### Requirement 19: Diff Viewer Component
+
+**User Story:** As an advertiser, I want to preview AI-proposed changes before applying them, so that I can verify modifications are correct.
+
+#### Acceptance Criteria
+
+1. THE Diff_Viewer SHALL display a side-by-side comparison of current and proposed survey states
+2. THE Diff_Viewer SHALL highlight added, removed, and modified elements using color coding
+3. THE Diff_Viewer SHALL display changes at the question, option, and logic rule level
+4. THE Diff_Viewer SHALL show AI_Action details for each proposed modification
+5. THE Diff_Viewer SHALL allow advertisers to accept individual changes or accept all changes
+6. THE Diff_Viewer SHALL allow advertisers to reject individual changes or reject all changes
+7. WHEN changes are accepted, THE Diff_Viewer SHALL apply modifications to the survey and update the Survey_Builder
+8. THE Diff_Viewer SHALL display change summaries indicating the number of additions, modifications, and deletions
+9. THE Diff_Viewer SHALL support keyboard navigation for accessibility
+
+### Requirement 20: AI-Enhanced Import Wizard
+
+**User Story:** As an advertiser, I want to import Excel files with AI normalization, so that inconsistent data is automatically cleaned and standardized.
+
+#### Acceptance Criteria
+
+1. THE Import_Wizard SHALL provide file upload interface for Excel files
+2. WHEN an Excel file is uploaded, THE Import_Wizard SHALL parse the file and extract survey questions
+3. THE Import_Wizard SHALL display a preview of parsed questions with detected question types
+4. THE Import_Wizard SHALL trigger AI normalization in Normalize mode for inconsistent formatting
+5. WHEN AI normalization is complete, THE Import_Wizard SHALL display normalized changes in the Diff_Viewer
+6. THE Import_Wizard SHALL allow advertisers to review and approve normalization changes
+7. THE Import_Wizard SHALL display import progress indicators during processing
+8. THE Import_Wizard SHALL handle import errors with descriptive error messages and retry options
+9. THE Import_Wizard SHALL support Excel files with columns for question text, question type, answer options, and logic rules
+10. THE Import_Wizard SHALL validate imported data against survey schema requirements
+
+### Requirement 21: Multi-Format Export Panel
+
+**User Story:** As an advertiser, I want to export surveys to multiple formats, so that I can share surveys with stakeholders and integrate with other systems.
+
+#### Acceptance Criteria
+
+1. THE Export_Panel SHALL provide format selection options for Excel, PDF, and JSON exports
+2. THE Export_Panel SHALL display export configuration options specific to each format
+3. WHEN an advertiser requests Excel export, THE Export_Panel SHALL generate an Excel file with questions, types, options, and logic
+4. WHEN an advertiser requests PDF export, THE Export_Panel SHALL generate a formatted PDF document displaying the complete survey
+5. WHEN an advertiser requests JSON export, THE Export_Panel SHALL provide the canonical JSON schema format
+6. THE Export_Panel SHALL display export progress indicators during file generation
+7. THE Export_Panel SHALL provide download links when export files are ready
+8. THE Export_Panel SHALL handle export errors with descriptive error messages and retry options
+9. THE Export_Panel SHALL preserve all survey data during export operations
+
+### Requirement 22: AI Processing States and Error Handling
+
+**User Story:** As an advertiser, I want clear feedback on AI operations and error recovery options, so that I can understand system status and resolve issues.
+
+#### Acceptance Criteria
+
+1. THE AI_Processing_State SHALL display loading indicators during AI request processing
+2. THE AI_Processing_State SHALL show progress indicators for long-running operations like import normalization
+3. THE AI_Processing_State SHALL display estimated completion time for AI operations
+4. THE AI_Error_Handler SHALL display specific error messages for different AI failure types
+5. THE AI_Error_Handler SHALL provide retry options for failed AI requests
+6. THE AI_Error_Handler SHALL suggest alternative approaches when AI operations fail repeatedly
+7. WHEN AI rate limits are exceeded, THE Rate_Limit_Display SHALL show when limits will reset
+8. THE AI_Error_Handler SHALL log AI errors for debugging purposes
+9. THE AI_Processing_State SHALL allow canceling long-running AI operations
+
+### Requirement 23: Security Integration for AI
+
+**User Story:** As a system administrator, I want the frontend to prevent malicious AI prompts, so that users cannot exploit the AI system.
+
+#### Acceptance Criteria
+
+1. THE Security_Guard SHALL validate user prompts before sending to the AI agent
+2. THE Security_Guard SHALL detect prompt injection patterns such as "ignore previous instructions" and "you are now"
+3. WHEN a malicious prompt is detected, THE Security_Guard SHALL block the request and display a warning message
+4. THE Security_Guard SHALL sanitize user inputs to remove potentially harmful content
+5. THE Rate_Limit_Display SHALL show current AI request usage and remaining quota
+6. THE Rate_Limit_Display SHALL warn advertisers when approaching rate limits
+7. THE Frontend_Application SHALL enforce client-side rate limiting to prevent excessive AI requests
+8. THE Security_Guard SHALL log blocked prompts for security monitoring
+
+### Requirement 24: Conversation Context Management
+
+**User Story:** As an advertiser, I want the AI to remember our conversation history, so that I can make follow-up requests without repeating context.
+
+#### Acceptance Criteria
+
+1. THE Conversation_Context SHALL maintain chat history for the current survey editing session
+2. THE Conversation_Context SHALL include previous user prompts, AI responses, and applied modifications
+3. THE Conversation_Context SHALL persist to the backend for session recovery
+4. WHEN an advertiser makes a follow-up request, THE AI_Agent_Panel SHALL include relevant context in the API request
+5. THE Conversation_Context SHALL support referencing previous changes (e.g., "change that question to multiple choice")
+6. THE Conversation_Context SHALL display conversation history in the AI_Agent_Panel
+7. THE Conversation_Context SHALL allow clearing conversation history to start fresh
+8. THE Conversation_Context SHALL automatically save context changes to prevent data loss
+
+### Requirement 25: Template Integration with AI
+
+**User Story:** As an advertiser, I want AI-powered template suggestions and modifications, so that I can quickly start with relevant survey structures.
+
+#### Acceptance Criteria
+
+1. THE Template_Gallery SHALL display pre-built survey templates organized by category
+2. THE Template_Gallery SHALL use AI to suggest relevant templates based on campaign objectives
+3. WHEN an advertiser selects a template, THE Template_Gallery SHALL load the template into the Survey_Builder
+4. THE Template_Gallery SHALL allow AI modification of loaded templates through the AI_Agent_Panel
+5. THE Template_Gallery SHALL display template previews with question counts and estimated completion times
+6. THE Template_Gallery SHALL support searching templates by keywords and categories
+7. THE Template_Gallery SHALL allow saving custom templates from existing surveys
+8. THE Template_Gallery SHALL integrate with the AI agent for template enhancement suggestions
+
+### Requirement 26: Version History with AI Tracking
+
+**User Story:** As an advertiser, I want to track AI-generated changes and revert to previous versions, so that I can manage survey evolution and recover from mistakes.
+
+#### Acceptance Criteria
+
+1. THE Version_History_Panel SHALL display chronological list of survey versions with timestamps
+2. THE Version_History_Panel SHALL indicate which changes were made by AI versus manual edits
+3. THE Version_History_Panel SHALL show AI_Agent_Mode and AI_Action details for AI-generated changes
+4. THE Version_History_Panel SHALL display change summaries for each version
+5. WHEN an advertiser selects a previous version, THE Version_History_Panel SHALL display a diff comparison
+6. THE Version_History_Panel SHALL allow rolling back to any previous version
+7. THE Version_History_Panel SHALL preserve AI conversation context associated with each version
+8. THE Version_History_Panel SHALL support branching from previous versions to create alternative survey paths
+
+### Requirement 27: Real-Time AI Integration Updates
+
+**User Story:** As an advertiser, I want real-time updates during AI operations, so that I understand system progress and can respond to changes.
+
+#### Acceptance Criteria
+
+1. THE AI_Agent_Panel SHALL update in real-time during AI processing operations
+2. THE Survey_Builder SHALL reflect AI-applied changes immediately after acceptance
+3. THE Diff_Viewer SHALL update dynamically as AI generates proposed changes
+4. THE Rate_Limit_Display SHALL update in real-time as AI requests are consumed
+5. THE Conversation_Context SHALL update immediately as new messages are exchanged
+6. THE Version_History_Panel SHALL update automatically when AI changes are applied
+7. THE AI_Processing_State SHALL provide live progress updates for long-running operations
+8. THE Frontend_Application SHALL use WebSocket connections or polling for real-time AI updates
+
+### Requirement 28: Survey Response Parser and Validator
 
 **User Story:** As the system, I want to parse and validate survey responses from the backend, so that the analytics dashboard displays accurate and properly formatted data.
 
@@ -316,4 +506,3 @@ This document specifies the requirements for the advertiser side of the platform
 5. FOR ALL valid Response objects, parsing then printing then parsing SHALL produce an equivalent object (round-trip property)
 6. THE Response_Parser SHALL handle all supported question types and answer formats
 7. WHEN the response data structure changes, THE Response_Parser SHALL gracefully handle legacy response formats
-
