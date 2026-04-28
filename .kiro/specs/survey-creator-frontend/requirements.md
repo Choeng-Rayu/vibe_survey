@@ -10,7 +10,7 @@ This document specifies the requirements for the advertiser side of the platform
 
 - **Advertiser**: A company or organization that creates survey campaigns to collect user feedback
 - **Campaign**: A complete advertising initiative including audience targeting, survey content, budget allocation, and execution timeline
-- **Survey_Builder**: The drag-and-drop interface for creating survey questions and logic
+- **Survey_Builder**: The drag-and-drop interface or image for creating survey questions and logic
 - **Audience_Targeting_Engine**: The system that defines and estimates target demographic segments
 - **Budget_Manager**: The system that tracks spending, enforces caps, and manages quotas
 - **Analytics_Dashboard**: The interface displaying campaign performance metrics and response data
@@ -349,4 +349,3 @@ This document specifies the requirements for the advertiser side of the platform
 5. FOR ALL valid Response objects, parsing then printing then parsing SHALL produce an equivalent object (round-trip property)
 6. THE Response_Parser SHALL handle all supported question types and answer formats
 7. WHEN the response data structure changes, THE Response_Parser SHALL gracefully handle legacy response formats
-
