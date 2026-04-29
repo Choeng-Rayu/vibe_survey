@@ -1,10 +1,12 @@
-# Design Document: REST API Design
+# Design Document: REST API Des ign
 
 ## Overview
 
 The REST API Design serves as the unified data layer for the Vibe Survey platform - a comprehensive Survey-as-Ads marketplace connecting advertisers, survey takers, and platform administrators. This API provides a cohesive interface serving three distinct frontend applications (Survey Creator Frontend, Survey Taker Frontend, System Admin Frontend), an AI Survey Builder Agent, and a scalable NestJS backend implementation.
 
-The API architecture emphasizes consistency, scalability, and maintainability while supporting high-traffic scenarios, real-time operations, and complex business logic. With 200+ endpoints organized across 7 resource domains, the API implements comprehensive versioning, security, caching, and performance optimization strategies.
+The API architecture emphasizes consistency, scalability, and maintainability while supporting high-traffic scenarios, real-time operations, and complex business logic. With 200+ endpoints organized across 18 functional domains, the API implements comprehensive versioning, security, caching, and performance optimization strategies.
+
+**Complete API Routes Specification**: The comprehensive API routes are documented in the [Unified API Routes Design](./unified-api-routes.md) which provides detailed endpoint specifications, request/response examples, and implementation guidelines for all 200+ API endpoints.
 
 ### Key Design Principles
 
