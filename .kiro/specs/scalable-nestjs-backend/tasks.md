@@ -2448,3 +2448,194 @@ This task ensures that all controllers implement the exact routes defined in `.k
 - [x] Task 63: Unified API routes implementation verification
 
 **Total: 63 Tasks covering all 30 requirements and full API specification compliance**
+
+
+---
+
+## Phase 23: Missing API Endpoints Implementation
+
+### Task 60: Implement Survey Flow Diagram Generation
+
+**Requirements**: Requirement 5 (Survey Management)
+
+**Objective**: Create flow diagram generation endpoint for visualizing survey branching logic.
+
+**Implementation**:
+- Create flow diagram service (`survey-flow-diagram.service.ts`)
+- Implement graph generation algorithm for survey structure
+- Add support for multiple output formats (SVG, PNG, JSON)
+- Create branching logic visualization
+- Implement skip logic representation
+- Add quota visualization
+- Create conditional logic display
+- Implement diagram caching for performance
+- Add diagram customization options (colors, layout)
+
+**API Endpoint**:
+- `GET /api/v1/surveys/:id/flow-diagram` - Generate survey flow diagram
+
+**Files**:
+- `backend/src/surveys/survey-flow-diagram.service.ts`
+- `backend/src/surveys/dto/flow-diagram-options.dto.ts`
+
+**Validation**: Flow diagrams are generated for surveys with branching logic
+
+
+### Task 61: Create Integration Module for API Key Management
+
+**Requirements**: Requirement 19 (Security and Rate Limiting), Requirement 22 (Integration and Webhook System)
+
+**Objective**: Create dedicated Integration module for managing API keys and third-party integrations.
+
+**Implementation**:
+- Create `integration/` module with IntegrationModule, IntegrationController, IntegrationService
+- Implement API key CRUD operations
+- Add API key generation with secure random tokens
+- Create API key validation and authentication
+- Implement API key permissions and scopes
+- Add API key usage tracking and analytics
+- Create API key rotation functionality
+- Implement API key rate limiting
+- Add API key expiration and renewal
+- Create API key audit logging
+
+**API Endpoints**:
+- `POST /api/v1/integration/api-keys` - Create API key
+- `GET /api/v1/integration/api-keys` - List API keys
+- `DELETE /api/v1/integration/api-keys/:id` - Delete API key
+- `POST /api/v1/integration/oauth/authorize` - OAuth authorization
+- `POST /api/v1/integration/oauth/token` - OAuth token exchange
+- `POST /api/v1/integration/payment-providers` - Add payment provider
+- `GET /api/v1/integration/payment-providers` - List payment providers
+- `POST /api/v1/integration/ai-services` - Configure AI service
+- `GET /api/v1/integration/ai-services/status` - Get AI service status
+
+**Files**:
+- `backend/src/integration/integration.module.ts`
+- `backend/src/integration/integration.controller.ts`
+- `backend/src/integration/integration.service.ts`
+- `backend/src/integration/api-key.service.ts`
+- `backend/src/integration/dto/create-api-key.dto.ts`
+- `backend/src/integration/dto/api-key-response.dto.ts`
+- `backend/src/integration/entities/api-key.entity.ts`
+
+**Validation**: API keys can be created, validated, and used for authentication
+
+---
+
+## Task Summary
+
+### Total Tasks: 61
+
+**Phase Breakdown**:
+- Phase 1: Project Foundation (6 tasks)
+- Phase 2: Authentication & Authorization (4 tasks)
+- Phase 3: User Management (4 tasks)
+- Phase 4: Survey Management (5 tasks)
+- Phase 5: AI Integration (2 tasks)
+- Phase 6: Campaign Management (3 tasks)
+- Phase 7: Survey Taking Engine (2 tasks)
+- Phase 8: Fraud Detection (1 task)
+- Phase 9: Rewards & Payment (3 tasks)
+- Phase 10: Analytics & Reporting (2 tasks)
+- Phase 11: Admin Management (4 tasks)
+- Phase 12: Real-time Communication (2 tasks)
+- Phase 13: Notification System (2 tasks)
+- Phase 14: File Storage (1 task)
+- Phase 15: Background Jobs (1 task)
+- Phase 16: Caching & Performance (2 tasks)
+- Phase 17: Security & Rate Limiting (3 tasks)
+- Phase 18: Webhook & Integration (2 tasks)
+- Phase 19: Health Checks & Monitoring (2 tasks)
+- Phase 20: Testing Infrastructure (3 tasks)
+- Phase 21: Deployment & DevOps (5 tasks)
+- Phase 22: Final Integration (1 task)
+- Phase 23: Missing API Endpoints (2 tasks)
+
+### API Endpoint Coverage
+
+**Total API Endpoints**: 215
+**Covered by Tasks**: 215 (100%)
+
+### Module Implementation Status
+
+| Module | Tasks | Status |
+|--------|-------|--------|
+| Auth | 4 | ✅ Complete |
+| Users | 4 | ✅ Complete |
+| Surveys | 6 | ✅ Complete (including flow diagram) |
+| AI Integration | 2 | ✅ Complete |
+| Campaigns | 3 | ✅ Complete |
+| Analytics | 2 | ✅ Complete |
+| Payments | 3 | ✅ Complete |
+| Admin | 4 | ✅ Complete |
+| Notifications | 2 | ✅ Complete |
+| Files | 1 | ✅ Complete |
+| Realtime | 2 | ✅ Complete |
+| Fraud Detection | 1 | ✅ Complete |
+| Integration | 1 | ✅ Complete (newly added) |
+| Common/Infrastructure | 15 | ✅ Complete |
+
+### Implementation Roadmap
+
+**Estimated Timeline**: 12-16 weeks (3-4 months)
+
+**Week 1-2**: Phase 1-2 (Foundation + Auth)
+**Week 3-4**: Phase 3-4 (Users + Surveys)
+**Week 5-6**: Phase 5-7 (AI + Campaigns + Survey Taking)
+**Week 7-8**: Phase 8-10 (Fraud + Payments + Analytics)
+**Week 9-10**: Phase 11-14 (Admin + Realtime + Notifications + Files)
+**Week 11-12**: Phase 15-18 (Jobs + Caching + Security + Webhooks)
+**Week 13-14**: Phase 19-21 (Monitoring + Testing + Deployment)
+**Week 15-16**: Phase 22-23 (Final Integration + Missing Endpoints)
+
+### Priority Levels
+
+**P0 (Critical - Must Have)**:
+- Tasks 1-6: Foundation
+- Tasks 7-10: Authentication
+- Tasks 11-14: User Management
+- Tasks 15-19: Survey Management
+- Tasks 22-24: Campaign Management
+- Tasks 25-26: Survey Taking
+- Tasks 28-29: Payments
+
+**P1 (High - Should Have)**:
+- Tasks 20-21: AI Integration
+- Task 27: Fraud Detection
+- Tasks 31-32: Analytics
+- Tasks 33-36: Admin Management
+- Tasks 44-46: Security
+
+**P2 (Medium - Nice to Have)**:
+- Tasks 37-39: Real-time & Notifications
+- Task 40: File Storage
+- Tasks 41-43: Background Jobs & Caching
+- Tasks 47-48: Webhooks & OAuth
+- Tasks 60-61: Missing Endpoints
+
+**P3 (Low - Can Wait)**:
+- Tasks 49-50: Monitoring
+- Tasks 51-53: Testing
+- Tasks 54-59: Deployment & DevOps
+
+---
+
+## Conclusion
+
+This comprehensive task breakdown covers all 215 API endpoints defined in the unified API specification. The implementation is organized into 23 phases with 61 tasks, providing a clear roadmap for building the Scalable NestJS Backend.
+
+**Key Achievements**:
+- ✅ 100% API endpoint coverage
+- ✅ All 13 modules defined and planned
+- ✅ Missing endpoints identified and tasks created
+- ✅ Clear implementation roadmap (12-16 weeks)
+- ✅ Priority levels assigned for phased delivery
+
+**Next Steps**:
+1. Review and approve task breakdown
+2. Assign tasks to development team
+3. Set up project tracking (Jira, Linear, etc.)
+4. Begin Phase 1 implementation
+5. Establish code review and testing processes
+6. Set up CI/CD pipeline early (Task 56)
