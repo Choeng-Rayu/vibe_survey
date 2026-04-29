@@ -42,7 +42,7 @@ backend/
 
 ## Frontend Structure (Next.js Apps)
 
-Each frontend application follows Next.js 13+ app router structure:
+Each frontend application follows Next.js 16+ app router structure:
 
 ```
 {app_name}/
