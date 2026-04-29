@@ -109,6 +109,24 @@ DELETE /api/v1/users/push/unsubscribe
 PUT    /api/v1/users/push/preferences
 ```
 
+### Consent Management
+```http
+GET /api/v1/users/consent
+PUT /api/v1/users/consent
+```
+
+### User Appeals
+```http
+GET    /api/v1/users/appeals
+POST   /api/v1/users/appeals
+GET    /api/v1/users/appeals/:id
+```
+
+### User Data Export
+```http
+POST /api/v1/users/export
+```
+
 ## 3. Survey Management Routes
 
 ### Survey CRUD Operations
@@ -135,16 +153,29 @@ POST /api/v1/surveys/:id/rollback
 GET  /api/v1/surveys/:id/versions/:version
 ```
 
-### Survey Templates & Question Bank
+## 4. Template & Question Bank Routes
+
+### Template Library
 ```http
-GET  /api/v1/surveys/templates
-GET  /api/v1/surveys/templates/:id
-POST /api/v1/surveys/templates
-GET  /api/v1/surveys/question-bank
-POST /api/v1/surveys/question-bank
+GET    /api/v1/templates
+GET    /api/v1/templates/:id
+POST   /api/v1/templates
+PUT    /api/v1/templates/:id
+DELETE /api/v1/templates/:id
+GET    /api/v1/templates/categories
+GET    /api/v1/templates/usage-stats
 ```
 
-## 4. AI Survey Builder Routes
+### Question Bank
+```http
+GET    /api/v1/question-bank
+GET    /api/v1/question-bank/:id
+POST   /api/v1/question-bank
+PUT    /api/v1/question-bank/:id
+DELETE /api/v1/question-bank/:id
+```
+
+## 5. AI Survey Builder Routes
 
 ### AI Generation & Modification
 ```http
@@ -168,7 +199,7 @@ GET /api/v1/surveys/ai/quota
 GET /api/v1/surveys/ai/status
 ```
 
-## 5. Survey Import/Export Routes
+## 6. Survey Import/Export Routes
 
 ### Import Operations
 ```http
@@ -186,7 +217,7 @@ GET  /api/v1/surveys/export/status/:jobId
 GET  /api/v1/surveys/export/download/:jobId
 ```
 
-## 6. Campaign Management Routes
+## 7. Campaign Management Routes
 
 ### Campaign CRUD Operations
 ```http
@@ -200,6 +231,7 @@ POST   /api/v1/campaigns/:id/duplicate
 
 ### Campaign Lifecycle Management
 ```http
+POST /api/v1/campaigns/:id/validate
 POST /api/v1/campaigns/:id/submit
 POST /api/v1/campaigns/:id/activate
 POST /api/v1/campaigns/:id/pause
@@ -214,7 +246,7 @@ GET /api/v1/campaigns/:id/history
 GET /api/v1/campaigns/:id/timeline
 ```
 
-## 7. Audience Targeting Routes
+## 8. Audience Targeting Routes
 
 ### Targeting Configuration
 ```http
@@ -237,7 +269,7 @@ POST /api/v1/targeting/lookalike
 GET  /api/v1/targeting/lookalike/:id
 ```
 
-## 8. Budget & Billing Routes
+## 9. Budget & Billing Routes
 
 ### Wallet Management
 ```http
@@ -263,7 +295,7 @@ GET    /api/v1/billing/payment-methods
 DELETE /api/v1/billing/payment-methods/:id
 ```
 
-## 9. Survey Taking Routes
+## 10. Survey Taking Routes
 
 ### Survey Discovery & Feed
 ```http
@@ -295,7 +327,7 @@ GET /api/v1/users/surveys/in-progress
 GET /api/v1/users/surveys/completed
 ```
 
-## 10. Rewards & Payout Routes
+## 11. Rewards & Payout Routes
 
 ### Wallet & Balance
 ```http
@@ -319,7 +351,7 @@ POST /api/v1/rewards/payment-methods
 GET /api/v1/rewards/exchange-rates
 ```
 
-## 11. Analytics & Reporting Routes
+## 12. Analytics & Reporting Routes
 
 ### Campaign Analytics
 ```http
@@ -344,7 +376,16 @@ GET  /api/v1/analytics/reports
 POST /api/v1/analytics/reports/schedule
 ```
 
-## 12. Admin Management Routes
+### Fraud Analytics
+```http
+GET /api/v1/analytics/fraud
+GET /api/v1/analytics/fraud/distribution
+GET /api/v1/analytics/fraud/trends
+GET /api/v1/analytics/fraud/campaigns/:id
+GET /api/v1/analytics/fraud/users/:id
+```
+
+## 13. Admin Management Routes
 
 ### Campaign Review & Moderation
 ```http
@@ -389,7 +430,108 @@ GET  /api/v1/admin/compliance/settings
 PUT  /api/v1/admin/compliance/settings
 ```
 
-## 13. System Configuration Routes
+### Campaign Quality Scoring
+```http
+GET  /api/v1/admin/campaigns/:id/quality-score
+GET  /api/v1/admin/campaigns/quality-scores
+GET  /api/v1/admin/quality/components
+GET  /api/v1/admin/quality/bias-analysis
+```
+
+### Bulk Campaign Operations
+```http
+POST /api/v1/admin/campaigns/bulk-approve
+POST /api/v1/admin/campaigns/bulk-reject
+GET  /api/v1/admin/campaigns/bulk/status/:jobId
+```
+
+### Spam & Duplicate Detection
+```http
+GET  /api/v1/admin/moderation/spam-detection
+GET  /api/v1/admin/moderation/duplicate-campaigns
+POST /api/v1/admin/moderation/spam/:id/mark
+GET  /api/v1/admin/moderation/keyword-blacklist
+POST /api/v1/admin/moderation/keyword-blacklist
+DELETE /api/v1/admin/moderation/keyword-blacklist/:id
+```
+
+### Data Access Control
+```http
+GET    /api/v1/admin/data/access-permissions
+POST   /api/v1/admin/data/access-permissions
+PUT    /api/v1/admin/data/access-permissions/:id
+DELETE /api/v1/admin/data/access-permissions/:id
+GET    /api/v1/admin/data/access-requests
+POST   /api/v1/admin/data/access-requests/:id/approve
+POST   /api/v1/admin/data/access-requests/:id/deny
+```
+
+### Real-Time Response Monitoring
+```http
+GET /api/v1/admin/monitoring/responses
+GET /api/v1/admin/monitoring/responses/campaigns/:id
+GET /api/v1/admin/monitoring/alerts
+GET /api/v1/admin/monitoring/metrics
+```
+
+### PII Detection & Scanning
+```http
+GET  /api/v1/admin/compliance/pii-scan/campaigns/:id
+GET  /api/v1/admin/compliance/pii-scan/responses/:id
+GET  /api/v1/admin/compliance/pii-reports
+POST /api/v1/admin/compliance/pii-anonymize/:id
+```
+
+### Compliance Checker
+```http
+POST /api/v1/admin/compliance/check/campaigns/:id
+GET  /api/v1/admin/compliance/rules
+POST /api/v1/admin/compliance/rules
+PUT  /api/v1/admin/compliance/rules/:id
+DELETE /api/v1/admin/compliance/rules/:id
+```
+
+### Regional Restrictions
+```http
+GET    /api/v1/admin/compliance/regional-restrictions
+POST   /api/v1/admin/compliance/regional-restrictions
+PUT    /api/v1/admin/compliance/regional-restrictions/:id
+DELETE /api/v1/admin/compliance/regional-restrictions/:id
+GET    /api/v1/admin/compliance/regional-restrictions/campaigns/:id
+```
+
+### Admin User & Role Management
+```http
+GET    /api/v1/admin/users/administrators
+POST   /api/v1/admin/users/administrators
+PUT    /api/v1/admin/users/administrators/:id
+DELETE /api/v1/admin/users/administrators/:id
+GET    /api/v1/admin/roles
+POST   /api/v1/admin/roles
+PUT    /api/v1/admin/roles/:id
+DELETE /api/v1/admin/roles/:id
+GET    /api/v1/admin/roles/:id/permissions
+PUT    /api/v1/admin/roles/:id/permissions
+```
+
+### Consent Management (Admin)
+```http
+GET /api/v1/admin/compliance/consent
+GET /api/v1/admin/compliance/consent/users/:id
+GET /api/v1/admin/compliance/consent/report
+```
+
+### Fraud Review & Feedback
+```http
+GET    /api/v1/admin/fraud/review-queue
+GET    /api/v1/admin/fraud/responses/:id
+POST   /api/v1/admin/fraud/responses/:id/action
+POST   /api/v1/admin/fraud/feedback
+GET    /api/v1/admin/fraud/settings
+PUT    /api/v1/admin/fraud/settings
+```
+
+## 14. System Configuration Routes
 
 ### Platform Configuration
 ```http
@@ -414,7 +556,7 @@ GET /api/v1/admin/system/metrics
 GET /api/v1/admin/system/logs
 ```
 
-## 14. Audit & Logging Routes
+## 15. Audit & Logging Routes
 
 ### Audit Trail
 ```http
@@ -430,7 +572,7 @@ GET /api/v1/admin/logs/security
 GET /api/v1/admin/logs/performance
 ```
 
-## 15. Notification & Communication Routes
+## 16. Notification & Communication Routes
 
 ### Notification Management
 ```http
@@ -451,7 +593,7 @@ DELETE /api/v1/webhooks/:id
 POST   /api/v1/webhooks/:id/test
 ```
 
-## 16. File Management Routes
+## 17. File Management Routes
 
 ### File Upload & Storage
 ```http
@@ -467,7 +609,7 @@ POST /api/v1/files/temporary
 GET  /api/v1/files/temporary/:id/url
 ```
 
-## 17. Real-Time Communication Routes
+## 18. Real-Time Communication Routes
 
 ### WebSocket Endpoints
 ```http
@@ -483,7 +625,7 @@ GET /api/v1/sse/analytics/:campaignId
 GET /api/v1/sse/system/status
 ```
 
-## 18. Integration & Third-Party Routes
+## 19. Integration & Third-Party Routes
 
 ### API Keys & OAuth
 ```http

@@ -3,9 +3,9 @@
 ## Project Overview
 
 **Vibe Survey** is a three-sided marketplace (Survey-as-Ads platform) connecting:
-- **Advertisers** → Create survey-based ad campaigns (survey_creator_frontend)
-- **Users/Survey Takers** → Complete surveys for rewards (survey_taker_frontend)
-- **Platform Admins** → Manage approvals and operations (admin_frontend)
+- **Advertisers** → Create survey-based ad campaigns (`survey_creator_frontend`)
+- **Users/Survey Takers** → Complete surveys for rewards (`survey_taker_frontend`)
+- **Platform Admins** → Manage approvals and operations (`admin_frontend`)
 
 **Backend** is a NestJS monolith with modular domain architecture serving 200+ REST API endpoints.
 **Database** is Supabase (PostgreSQL).
@@ -50,12 +50,14 @@ All frontend work must follow `.github/skills/frontend-design/SKILL.md`:
 ## Requirements Source
 
 Feature specs live in `.kiro/specs/*/requirements.md`:
-- `rest-api-design/` — Complete REST API specification
-- `scalable-nestjs-backend/` — Backend architecture requirements
-- `survey-creator-frontend/` — Advertiser campaign management
-- `survey-taker-frontend/` — User survey experience + fraud detection (Req 31-45)
-- `system-admin-frontend/` — Admin dashboard
-- `ai-survey-builder-agent/` — Natural language survey creation
+- `rest-api-design/` — Complete REST API specification (Req 1-25)
+- `scalable-nestjs-backend/` — Backend architecture requirements (Req 1-30)
+- `survey-creator-frontend/` — Advertiser campaign management (Req 1-28)
+- `survey-taker-frontend/` — User survey experience + fraud detection (Req 1-45)
+- `system-admin-frontend/` — Admin dashboard (Req 1-30)
+- `ai-survey-builder-agent/` — Natural language survey creation (Req 1-22)
+
+Design docs and tasks live alongside each spec in `design.md` and `tasks.md` where applicable.
 
 ## Backend Architecture (NestJS)
 
@@ -83,11 +85,11 @@ backend/src/
 
 ### Key Backend Patterns
 
-**ESM Only:** `"module": "NodeNext"` in tsconfig.json — use `.js` extensions in imports
+**ESM Only:** `"module": "NodeNext"` in `tsconfig.json` — use `.js` extensions in imports
 
-**Prisma ORM:** All database access through Prisma Client
+**Prisma ORM:** All database access through Prisma Client — never raw SQL
 
-**JWT Auth:** Access + refresh tokens, stored in httpOnly cookies
+**JWT Auth:** Access + refresh tokens, stored in httpOnly cookies — never localStorage
 
 **RBAC:** Roles = `survey_taker`, `advertiser`, `admin`
 
@@ -204,13 +206,15 @@ backend/src/
 ```
 
 **Key Endpoint Groups:**
-- `/api/v1/auth/*` — All auth operations
-- `/api/v1/surveys/*` — CRUD + AI + import/export
-- `/api/v1/campaigns/*` — Lifecycle + targeting + budgets
+- `/api/v1/auth/*` — All auth operations (register, login, refresh, OTP, MFA, OAuth)
+- `/api/v1/users/*` — Profile, preferences, trust tier, notifications
+- `/api/v1/surveys/*` — CRUD + AI + import/export + versioning + templates
+- `/api/v1/campaigns/*` — Lifecycle + targeting + budgets + analytics
 - `/api/v1/surveys/feed` — Survey discovery for takers
-- `/api/v1/surveys/:id/responses` — Submit responses
-- `/api/v1/rewards/*` — Wallet + withdrawals
-- `/api/v1/admin/*` — All admin operations
+- `/api/v1/surveys/:id/responses` — Submit responses, auto-save, resume
+- `/api/v1/rewards/*` — Wallet + withdrawals + exchange rates
+- `/api/v1/admin/*` — All admin operations (review, moderation, compliance, audit)
+- `/api/v1/ws/*`, `/api/v1/sse/*` — Real-time notifications and analytics
 
 See full spec: `.kiro/specs/rest-api-design/unified-api-routes.md`
 
@@ -286,20 +290,21 @@ npx prisma generate
 1. **JWT in httpOnly cookies** — never localStorage
 2. **Device fingerprint** on auth requests (survey_taker)
 3. **Input sanitization** on all text fields
-4. **Rate limiting** on auth endpoints
+4. **Rate limiting** on auth and AI endpoints
 5. **CORS** configured per environment
 6. **SQL injection prevention** via Prisma (never raw SQL)
 7. **XSS protection** via React + CSP headers
 8. **File uploads** — validate type/size, scan for malware
+9. **Prompt injection guard** on all AI endpoints
 
 ## Common Mistakes to Avoid
 
-- **Don't** use Next.js 15 patterns (this is v16)
+- **Don't** use Next.js 15 patterns (this is v16 with App Router)
 - **Don't** put business logic in frontend — backend is source of truth
 - **Don't** skip fraud tracking in survey_taker — it's required
 - **Don't** forget phone verification in survey_taker
 - **Don't** use raw SQL — always use Prisma
-- **Don't** hard delete — always soft delete
+- **Don't** hard delete — always soft delete with `deleted_at`
 - **Don't** skip Zod validation on forms
 - **Don't** forget error boundaries in React components
 - **Don't** commit `.env` files

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Git
+.git/
+
+# Environment files
+.env*
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# IDE/Editor directories
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Cache directories
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Documentation (with exceptions below)
+*.md
+README.md
+
+# Re-include important config docs
+!AGENTS.md
+
+# CI/CD and project management
+.github/
+.kiro/
