@@ -16,7 +16,7 @@ The Survey Taker Frontend is a React-based web application that serves as the pr
 
 ### Technology Stack
 
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript for type safety
 - **Styling**: Tailwind CSS for responsive design
 - **State Management**: Zustand for client state, TanStack Query for server state

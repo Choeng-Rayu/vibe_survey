@@ -93,8 +93,8 @@ graph TB
 
 ### Technology Stack
 
-- **Frontend Framework**: React 18 with TypeScript
-- **Build Tool**: Vite for fast development and optimized builds
+- **Frontend Framework**: React 19 with TypeScript (Next.js 16 App Router)
+- **Build Tool**: Next.js 16 with App Router for SSR and optimized builds
 - **Styling**: Tailwind CSS with shadcn/ui component library
 - **State Management**: 
   - Zustand for client-side state (UI state, AI conversation context)
@@ -503,10 +503,6 @@ Based on the prework analysis, the following properties have been identified as 
 *For any* valid Response object, parsing the object to JSON then parsing back to a Response object should produce an equivalent object with all data preserved.
 
 **Validates: Requirements 28.5**
-
-<function_calls>
-<invoke name="prework">
-<parameter name="featureName">survey-creator-frontend
 
 ## Error Handling
 

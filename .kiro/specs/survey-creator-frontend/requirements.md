@@ -306,8 +306,8 @@ This document specifies the requirements for the advertiser side of the platform
 
 #### Acceptance Criteria
 
-1. THE Frontend_Application SHALL be built using React with TypeScript (TSX)
-2. THE Frontend_Application SHALL use Vite as the build tool
+1. THE Frontend_Application SHALL be built using Next.js 16 with React 19 and TypeScript (TSX)
+2. THE Frontend_Application SHALL use Next.js as the build framework with App Router
 3. THE Frontend_Application SHALL use Tailwind CSS and shadcn/ui for styling and components
 4. THE Frontend_Application SHALL be fully responsive supporting desktop, tablet, and mobile viewports
 5. THE Frontend_Application SHALL display loading states during asynchronous operations including AI processing

@@ -15,6 +15,7 @@ description: "Use when planning or implementing Vibe Survey backend/frontend wor
 ## Architecture Governance
 - All frontends integrate with the same backend API base.
 - All routes must be under /api/v1 and follow unified-api-routes.md.
+- Tell the Agent that all route endpoints are already designed in unified-api-routes.md.
 - Endpoint changes require:
   - Update unified-api-routes.md
   - Backend implementation update
