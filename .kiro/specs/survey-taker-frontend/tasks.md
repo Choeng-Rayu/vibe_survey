@@ -2,14 +2,14 @@
 
 ## Overview
 
-This implementation plan converts the Survey Taker Frontend design into a series of coding tasks for a React-based web application. The application will be built using Next.js 14 with TypeScript, implementing a mobile-first Survey-as-Ads platform with comprehensive fraud detection, bilingual support, and local payment integration.
+This implementation plan converts the Survey Taker Frontend design into a series of coding tasks for a React-based web application. The application will be built using Next.js 16 with TypeScript, implementing a mobile-first Survey-as-Ads platform with comprehensive fraud detection, bilingual support, and local payment integration.
 
 The implementation follows an incremental approach, building core infrastructure first, then adding features layer by layer, with testing integrated throughout. Each task builds on previous work and includes specific requirements references for traceability.
 
 ## Tasks
 
 - [ ] 1. Project Setup and Core Infrastructure
-  - Set up Next.js 14 project with TypeScript and App Router
+  - Set up Next.js 16 project with TypeScript and App Router
   - Configure Tailwind CSS for mobile-first responsive design
   - Set up ESLint, Prettier, and TypeScript strict mode
   - Configure environment variables and build scripts
