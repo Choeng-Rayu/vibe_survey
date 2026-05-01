@@ -1,14 +1,605 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema for Vibe Survey platform
+// Req 2: Database Architecture - all entities, relationships, indexes, soft deletes
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  survey_taker
+  advertiser
+  admin
+}
+
+enum TrustTier {
+  bronze
+  silver
+  gold
+  platinum
+}
+
+enum SurveyStatus {
+  draft
+  active
+  paused
+  completed
+  archived
+}
+
+enum CampaignStatus {
+  draft
+  pending_review
+  approved
+  active
+  paused
+  completed
+  rejected
+  archived
+}
+
+enum ResponseStatus {
+  in_progress
+  completed
+  abandoned
+  flagged
+}
+
+enum TransactionType {
+  credit
+  debit
+  withdrawal
+  refund
+  bonus
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
+  reversed
+}
+
+enum WithdrawalStatus {
+  pending
+  processing
+  completed
+  failed
+  cancelled
+}
+
+enum WalletProvider {
+  bakong
+  aba_pay
+  wing
+  true_money
+  bank_transfer
+}
+
+enum NotificationChannel {
+  email
+  sms
+  push
+  in_app
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  delivered
+  failed
+  read
+}
+
+enum ModerationStatus {
+  pending
+  approved
+  rejected
+  flagged
+}
+
+enum AuditAction {
+  create
+  update
+  delete
+  login
+  logout
+  approve
+  reject
+  suspend
+  ban
+}
+
+// ─── User & Auth ──────────────────────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  phone             String?   @unique
+  password_hash     String?
+  role              Role      @default(survey_taker)
+  is_email_verified Boolean   @default(false)
+  is_phone_verified Boolean   @default(false)
+  is_mfa_enabled    Boolean   @default(false)
+  mfa_secret        String?
+  trust_tier        TrustTier @default(bronze)
+  trust_score       Float     @default(0)
+  is_suspended      Boolean   @default(false)
+  is_banned         Boolean   @default(false)
+  suspension_reason String?
+  ban_reason        String?
+  last_login_at     DateTime?
+  last_login_ip     String?
+  device_fingerprint String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  deleted_at        DateTime?
+
+  // Relations
+  profile           Profile?
+  surveys           Survey[]
+  campaigns         Campaign[]
+  responses         Response[]
+  wallet            Wallet?
+  notifications     Notification[]
+  audit_logs        AuditLog[]
+  refresh_tokens    RefreshToken[]
+  oauth_accounts    OAuthAccount[]
+  api_keys          ApiKey[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@index([trust_tier])
+  @@index([deleted_at])
+  @@map("users")
+}
+
+model Profile {
+  id                  String    @id @default(cuid())
+  user_id             String    @unique
+  first_name          String?
+  last_name           String?
+  avatar_url          String?
+  date_of_birth       DateTime?
+  gender              String?
+  country             String?
+  region              String?
+  city                String?
+  language            String    @default("en")
+  education_level     String?
+  employment_status   String?
+  income_range        String?
+  interests           String[]  @default([])
+  completion_pct      Int       @default(0)
+  consent_marketing   Boolean   @default(false)
+  consent_analytics   Boolean   @default(false)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([country])
+  @@map("profiles")
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  user_id    String
+  token_hash String    @unique
+  expires_at DateTime
+  is_revoked Boolean   @default(false)
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([token_hash])
+  @@map("refresh_tokens")
+}
+
+model OAuthAccount {
+  id          String   @id @default(cuid())
+  user_id     String
+  provider    String   // google, facebook
+  provider_id String
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_id])
+  @@index([user_id])
+  @@map("oauth_accounts")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  user_id     String
+  name        String
+  key_hash    String    @unique
+  key_prefix  String    // first 8 chars for display
+  scopes      String[]  @default([])
+  last_used_at DateTime?
+  expires_at  DateTime?
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  deleted_at  DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([key_hash])
+  @@map("api_keys")
+}
+
+// ─── Survey ───────────────────────────────────────────────────────────────────
+
+model Survey {
+  id              String       @id @default(cuid())
+  user_id         String
+  title           String
+  description     String?
+  status          SurveyStatus @default(draft)
+  language        String       @default("en")
+  // Canonical JSON schema stored as JSONB (Req 2.10)
+  definition      Json
+  tags            String[]     @default([])
+  estimated_time  Int?         // minutes
+  question_count  Int          @default(0)
+  version         Int          @default(1)
+  is_template     Boolean      @default(false)
+  template_category String?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  deleted_at      DateTime?    // soft delete (Req 2.5)
+
+  user      User            @relation(fields: [user_id], references: [id])
+  versions  SurveyVersion[]
+  campaigns Campaign[]
+  responses Response[]
+
+  @@index([user_id])
+  @@index([status])
+  @@index([is_template])
+  @@index([deleted_at])
+  @@map("surveys")
+}
+
+model SurveyVersion {
+  id          String   @id @default(cuid())
+  survey_id   String
+  version     Int
+  definition  Json     // snapshot of survey definition at this version
+  change_note String?
+  created_by  String
+  created_at  DateTime @default(now())
+
+  survey Survey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+
+  @@unique([survey_id, version])
+  @@index([survey_id])
+  @@map("survey_versions")
+}
+
+model QuestionBank {
+  id          String   @id @default(cuid())
+  user_id     String
+  title       String
+  type        String   // question type from canonical schema
+  definition  Json     // question definition
+  tags        String[] @default([])
+  is_public   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  @@index([user_id])
+  @@index([type])
+  @@map("question_bank")
+}
+
+// ─── Campaign ─────────────────────────────────────────────────────────────────
+
+model Campaign {
+  id              String         @id @default(cuid())
+  user_id         String
+  survey_id       String
+  title           String
+  description     String?
+  status          CampaignStatus @default(draft)
+  targeting       Json           // targeting criteria JSONB (Req 2.10)
+  budget_total    Decimal        @db.Decimal(12, 2)
+  budget_spent    Decimal        @default(0) @db.Decimal(12, 2)
+  cpr             Decimal        @db.Decimal(8, 4) // cost per response
+  max_responses   Int?
+  response_count  Int            @default(0)
+  starts_at       DateTime?
+  ends_at         DateTime?
+  review_note     String?
+  reviewed_by     String?
+  reviewed_at     DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  deleted_at      DateTime?      // soft delete
+
+  user      User               @relation(fields: [user_id], references: [id])
+  survey    Survey             @relation(fields: [survey_id], references: [id])
+  responses Response[]
+  status_history CampaignStatusHistory[]
+
+  @@index([user_id])
+  @@index([status])
+  @@index([deleted_at])
+  @@map("campaigns")
+}
+
+model CampaignStatusHistory {
+  id          String         @id @default(cuid())
+  campaign_id String
+  from_status CampaignStatus?
+  to_status   CampaignStatus
+  changed_by  String
+  note        String?
+  created_at  DateTime       @default(now())
+
+  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+
+  @@index([campaign_id])
+  @@map("campaign_status_history")
+}
+
+// ─── Response ─────────────────────────────────────────────────────────────────
+
+model Response {
+  id               String         @id @default(cuid())
+  survey_id        String
+  campaign_id      String?
+  user_id          String
+  status           ResponseStatus @default(in_progress)
+  // Answers and behavioral data as JSONB (Req 2.10)
+  answers          Json           @default("{}")
+  behavioral_data  Json           @default("{}")  // click patterns, timings, scroll
+  fraud_score      Float          @default(0)     // 0-100 (Req 11)
+  fraud_signals    Json           @default("{}")
+  quality_label    String?        // "high_quality" | "suspicious" | "likely_fraud"
+  time_spent       Int?           // seconds
+  started_at       DateTime       @default(now())
+  completed_at     DateTime?
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  deleted_at       DateTime?
+
+  survey      Survey       @relation(fields: [survey_id], references: [id])
+  campaign    Campaign?    @relation(fields: [campaign_id], references: [id])
+  user        User         @relation(fields: [user_id], references: [id])
+  transaction Transaction?
+
+  @@index([survey_id])
+  @@index([campaign_id])
+  @@index([user_id])
+  @@index([status])
+  @@index([fraud_score])
+  @@index([deleted_at])
+  @@map("responses")
+}
+
+// ─── Wallet & Payments ────────────────────────────────────────────────────────
+
+model Wallet {
+  id           String   @id @default(cuid())
+  user_id      String   @unique
+  balance      Decimal  @default(0) @db.Decimal(12, 2)
+  points       Int      @default(0)
+  currency     String   @default("USD")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  withdrawals  Withdrawal[]
+
+  @@index([user_id])
+  @@map("wallets")
+}
+
+model Transaction {
+  id           String            @id @default(cuid())
+  wallet_id    String
+  response_id  String?           @unique
+  type         TransactionType
+  status       TransactionStatus @default(pending)
+  amount       Decimal           @db.Decimal(12, 2)
+  currency     String            @default("USD")
+  description  String?
+  metadata     Json              @default("{}")
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+
+  wallet   Wallet    @relation(fields: [wallet_id], references: [id])
+  response Response? @relation(fields: [response_id], references: [id])
+
+  @@index([wallet_id])
+  @@index([type])
+  @@index([status])
+  @@map("transactions")
+}
+
+model Withdrawal {
+  id              String           @id @default(cuid())
+  wallet_id       String
+  amount          Decimal          @db.Decimal(12, 2)
+  currency        String           @default("USD")
+  provider        WalletProvider
+  provider_account String          // phone number or account ID
+  status          WithdrawalStatus @default(pending)
+  provider_ref    String?          // external transaction reference
+  failure_reason  String?
+  retry_count     Int              @default(0)
+  processed_at    DateTime?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  wallet Wallet @relation(fields: [wallet_id], references: [id])
+
+  @@index([wallet_id])
+  @@index([status])
+  @@map("withdrawals")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id         String              @id @default(cuid())
+  user_id    String
+  channel    NotificationChannel
+  status     NotificationStatus  @default(pending)
+  title      String
+  body       String
+  data       Json                @default("{}")
+  template_id String?
+  read_at    DateTime?
+  sent_at    DateTime?
+  created_at DateTime            @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+  @@index([read_at])
+  @@map("notifications")
+}
+
+model NotificationTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  channel     NotificationChannel
+  subject     String?
+  body_en     String
+  body_km     String?  // Khmer translation
+  variables   String[] @default([])
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("notification_templates")
+}
+
+// ─── Admin & Audit ────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  user_id     String?
+  action      AuditAction
+  entity_type String
+  entity_id   String
+  old_value   Json?
+  new_value   Json?
+  ip_address  String?
+  user_agent  String?
+  created_at  DateTime    @default(now())
+
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([entity_type, entity_id])
+  @@index([action])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model ModerationItem {
+  id          String           @id @default(cuid())
+  entity_type String           // survey | campaign | response | user
+  entity_id   String
+  status      ModerationStatus @default(pending)
+  reason      String?
+  flagged_by  String?
+  reviewed_by String?
+  reviewed_at DateTime?
+  note        String?
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  @@index([entity_type, entity_id])
+  @@index([status])
+  @@map("moderation_items")
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  is_enabled  Boolean  @default(false)
+  description String?
+  rollout_pct Int      @default(0) // 0-100 percentage rollout
+  updated_by  String?
+  updated_at  DateTime @updatedAt
+  created_at  DateTime @default(now())
+
+  @@map("feature_flags")
+}
+
+// ─── File Storage ─────────────────────────────────────────────────────────────
+
+model File {
+  id           String    @id @default(cuid())
+  user_id      String
+  filename     String
+  original_name String
+  mime_type    String
+  size         Int       // bytes
+  storage_key  String    @unique // path in storage backend
+  storage_type String    @default("local") // local | s3 | r2
+  is_temporary Boolean   @default(false)
+  expires_at   DateTime?
+  created_at   DateTime  @default(now())
+  deleted_at   DateTime?
+
+  @@index([user_id])
+  @@index([storage_key])
+  @@index([deleted_at])
+  @@map("files")
+}
+
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+model Webhook {
+  id          String    @id @default(cuid())
+  user_id     String
+  url         String
+  events      String[]  // event types to subscribe to
+  secret      String    // for HMAC signature
+  is_active   Boolean   @default(true)
+  last_used_at DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  deliveries WebhookDelivery[]
+
+  @@index([user_id])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id          String   @id @default(cuid())
+  webhook_id  String
+  event_type  String
+  payload     Json
+  status_code Int?
+  response    String?
+  attempt     Int      @default(1)
+  delivered_at DateTime?
+  created_at  DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhook_id], references: [id], onDelete: Cascade)
+
+  @@index([webhook_id])
+  @@index([event_type])
+  @@map("webhook_deliveries")
 }
