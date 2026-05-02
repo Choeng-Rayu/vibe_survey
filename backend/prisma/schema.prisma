@@ -81,6 +81,25 @@ enum WalletProvider {
   bank_transfer
 }
 
+enum PaymentMethodType {
+  card
+  bank_transfer
+  mobile_wallet
+}
+
+enum PaymentGatewayProvider {
+  bakong
+  manual_bank
+  mock_card
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
 enum NotificationChannel {
   email
   sms
@@ -146,6 +165,8 @@ model User {
   campaigns         Campaign[]
   responses         Response[]
   wallet            Wallet?
+  payment_methods   PaymentMethod[]
+  invoices          Invoice[]
   notifications     Notification[]
   audit_logs        AuditLog[]
   refresh_tokens    RefreshToken[]
@@ -219,22 +240,26 @@ model OAuthAccount {
 }
 
 model ApiKey {
-  id          String    @id @default(cuid())
-  user_id     String
-  name        String
-  key_hash    String    @unique
-  key_prefix  String    // first 8 chars for display
-  scopes      String[]  @default([])
+  id           String    @id @default(cuid())
+  user_id      String
+  name         String
+  key_hash     String    @unique
+  key_prefix   String    // first 12 chars for display (vsk_ + 8 chars)
+  scopes       String[]  @default([])
   last_used_at DateTime?
-  expires_at  DateTime?
-  is_active   Boolean   @default(true)
-  created_at  DateTime  @default(now())
-  deleted_at  DateTime?
+  expires_at   DateTime?
+  revoked_at   DateTime? // Soft delete
+  is_active    Boolean   @default(true)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([key_hash])
+  @@index([key_prefix])
+  @@index([expires_at])
   @@map("api_keys")
 }
 
@@ -450,6 +475,48 @@ model Withdrawal {
   @@index([wallet_id])
   @@index([status])
   @@map("withdrawals")
+}
+
+// ─── Billing & Invoices ─────────────────────────────────────────────────────
+
+model PaymentMethod {
+  id           String                 @id @default(cuid())
+  user_id      String
+  provider     PaymentGatewayProvider
+  method_type  PaymentMethodType
+  label        String?
+  last4        String?
+  token_ref    String
+  is_default   Boolean                @default(false)
+  created_at   DateTime               @default(now())
+  updated_at   DateTime               @updatedAt
+  deleted_at   DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([provider])
+  @@map("payment_methods")
+}
+
+model Invoice {
+  id                      String       @id @default(cuid())
+  user_id                 String
+  payment_transaction_id  String?
+  amount                  Decimal      @db.Decimal(12, 2)
+  currency                String       @default("USD")
+  status                  InvoiceStatus @default(pending)
+  issued_at               DateTime     @default(now())
+  paid_at                 DateTime?
+  metadata                Json         @default("{}")
+  created_at              DateTime     @default(now())
+  updated_at              DateTime     @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+  @@map("invoices")
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────

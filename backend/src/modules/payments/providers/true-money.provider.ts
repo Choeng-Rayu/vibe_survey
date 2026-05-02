@@ -87,4 +87,8 @@ export class TrueMoneyProvider implements WalletProviderInterface {
     const phoneRegex = /^855\d{8,9}$/;
     return phoneRegex.test(accountId);
   }
+
+  isConfigured(): boolean {
+    return Boolean(this.apiKey && this.merchantId);
+  }
 }

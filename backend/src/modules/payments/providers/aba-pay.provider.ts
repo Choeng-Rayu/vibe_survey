@@ -88,4 +88,8 @@ export class AbaPayProvider implements WalletProviderInterface {
     const accountRegex = /^\d{10,16}$/;
     return phoneRegex.test(accountId) || accountRegex.test(accountId);
   }
+
+  isConfigured(): boolean {
+    return Boolean(this.apiKey && this.merchantId);
+  }
 }

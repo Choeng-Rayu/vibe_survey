@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database/prisma.service';
+import { PrismaService } from '../../database/prisma.service.js';
 import { Prisma } from '@prisma/client';
+import { PaginationHelper, PaginatedResult } from '../../common/utils/pagination.helper.js';
 
-// Requirement 5: Survey Management - Repository pattern
+// Req 18.3: Query optimization with proper includes
 @Injectable()
 export class SurveysRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -12,16 +13,46 @@ export class SurveysRepository {
   }
 
   async findById(id: string) {
-    return this.prisma.survey.findUnique({ where: { id } });
+    // Req 18.3: Optimized query with select to reduce payload
+    return this.prisma.survey.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, email: true },
+        },
+      },
+    });
   }
 
   async findMany(params: {
-    skip?: number;
-    take?: number;
+    limit?: number;
+    cursor?: string;
     where?: Prisma.SurveyWhereInput;
     orderBy?: Prisma.SurveyOrderByWithRelationInput;
-  }) {
-    return this.prisma.survey.findMany(params);
+  }): Promise<PaginatedResult<any>> {
+    const limit = PaginationHelper.getLimit(params.limit);
+
+    const data = await this.prisma.survey.findMany({
+      take: limit + 1,
+      skip: params.cursor ? 1 : 0,
+      cursor: params.cursor ? { id: params.cursor } : undefined,
+      where: params.where,
+      orderBy: params.orderBy || { created_at: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        created_at: true,
+        updated_at: true,
+        user: {
+          select: { id: true, email: true },
+        },
+      },
+    });
+
+    const total = await this.prisma.survey.count({ where: params.where });
+    return PaginationHelper.buildResult(data, limit, total);
   }
 
   async update(id: string, data: Prisma.SurveyUpdateInput) {

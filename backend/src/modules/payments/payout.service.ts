@@ -6,7 +6,8 @@ import { AbaPayProvider } from './providers/aba-pay.provider';
 import { WingProvider } from './providers/wing.provider';
 import { TrueMoneyProvider } from './providers/true-money.provider';
 import { WalletProvider, WithdrawalStatus } from '@prisma/client';
-import { CreateWithdrawalDto, WithdrawalDto } from './dto/withdrawal.dto';
+import { CreateWithdrawalDto } from './dto/withdrawal-request.dto';
+import { WithdrawalDto } from './dto/withdrawal.dto';
 
 // Requirement 12.2: Support multiple payout methods
 // Requirement 12.3: Mobile wallet integration
@@ -16,7 +17,10 @@ import { CreateWithdrawalDto, WithdrawalDto } from './dto/withdrawal.dto';
 export class PayoutService {
   private readonly logger = new Logger(PayoutService.name);
   private readonly MIN_WITHDRAWAL = 5; // Minimum $5 withdrawal
+  private readonly MAX_WITHDRAWAL = 500; // Maximum $500 per withdrawal
+  private readonly DAILY_WITHDRAWAL_LIMIT = 1000; // Maximum $1000 per day
   private readonly MAX_RETRY_ATTEMPTS = 3;
+  private readonly SUPPORTED_CURRENCIES = ['USD', 'KHR'];
 
   constructor(
     private readonly prisma: PrismaService,
@@ -29,18 +33,23 @@ export class PayoutService {
 
   // Requirement 12.4: Create withdrawal request
   async createWithdrawal(userId: string, dto: CreateWithdrawalDto) {
-    // Validate minimum withdrawal
-    if (dto.amount < this.MIN_WITHDRAWAL) {
-      throw new BadRequestException(`Minimum withdrawal is $${this.MIN_WITHDRAWAL}`);
-    }
+    const wallet = await this.walletService.getWalletByUserId(userId);
 
-    // Validate account format based on provider
+    this.ensureProviderEnabled(dto.provider);
     this.validateProviderAccount(dto.provider, dto.provider_account);
 
-    const wallet = await this.walletService.getWalletByUserId(userId);
-    const balance = Number(wallet.balance);
+    const { payoutAmount, payoutCurrency, amountInWalletCurrency } = this.normalizeWithdrawalAmount(
+      dto.amount,
+      dto.currency,
+      wallet.currency,
+      dto.provider,
+    );
 
-    if (balance < dto.amount) {
+    // Req 12.7/12.8: convert to wallet currency for limits and balance checks
+    await this.enforceWithdrawalLimits(wallet.id, amountInWalletCurrency, wallet.currency);
+
+    const balance = Number(wallet.balance);
+    if (balance < amountInWalletCurrency) {
       throw new BadRequestException('Insufficient balance');
     }
 
@@ -48,8 +57,8 @@ export class PayoutService {
     const withdrawal = await this.prisma.withdrawal.create({
       data: {
         wallet_id: wallet.id,
-        amount: dto.amount,
-        currency: dto.currency,
+        amount: payoutAmount,
+        currency: payoutCurrency,
         provider: dto.provider,
         provider_account: dto.provider_account,
         status: WithdrawalStatus.pending,
@@ -57,7 +66,7 @@ export class PayoutService {
     });
 
     // Deduct balance
-    await this.walletService.deductBalance(userId, dto.amount);
+    await this.walletService.deductBalance(userId, amountInWalletCurrency);
 
     // Process withdrawal asynchronously
     this.processWithdrawal(withdrawal.id).catch(err => {
@@ -91,6 +100,132 @@ export class PayoutService {
           throw new BadRequestException('Invalid TrueMoney account format');
         }
         break;
+    }
+  }
+
+  private ensureProviderEnabled(provider: WalletProvider) {
+    if (!this.isProviderEnabled(provider)) {
+      throw new BadRequestException('Selected provider is not available');
+    }
+  }
+
+  private isProviderEnabled(provider: WalletProvider): boolean {
+    switch (provider) {
+      case WalletProvider.bakong:
+        return this.bakongService.isConfigured();
+      case WalletProvider.aba_pay:
+        return this.abaPayProvider.isConfigured();
+      case WalletProvider.wing:
+        return this.wingProvider.isConfigured();
+      case WalletProvider.true_money:
+        return this.trueMoneyProvider.isConfigured();
+      default:
+        return false;
+    }
+  }
+
+  private normalizeWithdrawalAmount(
+    amount: number,
+    requestedCurrency: string | undefined,
+    walletCurrency: string,
+    provider: WalletProvider,
+  ) {
+    const normalizedWalletCurrency = this.normalizeCurrencyCode(walletCurrency);
+    const payoutCurrency = this.normalizeCurrencyCode(requestedCurrency ?? normalizedWalletCurrency);
+
+    if (!this.isCurrencySupported(normalizedWalletCurrency)) {
+      throw new BadRequestException(`Unsupported wallet currency: ${normalizedWalletCurrency}`);
+    }
+
+    if (!this.isCurrencySupported(payoutCurrency)) {
+      throw new BadRequestException(`Unsupported currency: ${payoutCurrency}`);
+    }
+
+    const providerCurrencies = this.getProviderCurrencies(provider);
+    if (!providerCurrencies.includes(payoutCurrency)) {
+      throw new BadRequestException(`Provider does not support ${payoutCurrency}`);
+    }
+
+    const amountInWalletCurrency = this.convertAmount(amount, payoutCurrency, normalizedWalletCurrency);
+
+    return {
+      payoutAmount: this.roundAmount(amount),
+      payoutCurrency,
+      amountInWalletCurrency: this.roundAmount(amountInWalletCurrency),
+    };
+  }
+
+  private normalizeCurrencyCode(currency: string) {
+    return currency.trim().toUpperCase();
+  }
+
+  private isCurrencySupported(currency: string) {
+    return this.SUPPORTED_CURRENCIES.includes(currency);
+  }
+
+  private getProviderCurrencies(provider: WalletProvider): string[] {
+    switch (provider) {
+      case WalletProvider.bakong:
+        return ['USD', 'KHR'];
+      case WalletProvider.aba_pay:
+      case WalletProvider.wing:
+      case WalletProvider.true_money:
+        return ['USD'];
+      default:
+        return [];
+    }
+  }
+
+  private convertAmount(amount: number, fromCurrency: string, toCurrency: string) {
+    if (fromCurrency === toCurrency) {
+      return amount;
+    }
+
+    const rates = this.getExchangeRateTable();
+    const fromRate = rates.rates[fromCurrency];
+    const toRate = rates.rates[toCurrency];
+
+    if (!fromRate || !toRate) {
+      throw new BadRequestException(`Exchange rate unavailable for ${fromCurrency} to ${toCurrency}`);
+    }
+
+    const amountInBase = fromCurrency === rates.base ? amount : amount / fromRate;
+    return amountInBase * toRate;
+  }
+
+  private roundAmount(amount: number) {
+    return Math.round(amount * 100) / 100;
+  }
+
+  private async enforceWithdrawalLimits(walletId: string, amountInWalletCurrency: number, walletCurrency: string) {
+    if (amountInWalletCurrency < this.MIN_WITHDRAWAL) {
+      throw new BadRequestException(`Minimum withdrawal is $${this.MIN_WITHDRAWAL}`);
+    }
+
+    if (amountInWalletCurrency > this.MAX_WITHDRAWAL) {
+      throw new BadRequestException(`Maximum withdrawal is $${this.MAX_WITHDRAWAL}`);
+    }
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const withdrawals = await this.prisma.withdrawal.findMany({
+      where: {
+        wallet_id: walletId,
+        created_at: { gte: startOfDay },
+        status: { in: [WithdrawalStatus.pending, WithdrawalStatus.processing, WithdrawalStatus.completed] },
+      },
+      select: { amount: true, currency: true },
+    });
+
+    const normalizedWalletCurrency = this.normalizeCurrencyCode(walletCurrency);
+    const dailyTotal = withdrawals.reduce((sum, withdrawal) => {
+      const currency = this.normalizeCurrencyCode(withdrawal.currency);
+      return sum + this.convertAmount(Number(withdrawal.amount), currency, normalizedWalletCurrency);
+    }, 0);
+
+    if (dailyTotal + amountInWalletCurrency > this.DAILY_WITHDRAWAL_LIMIT) {
+      throw new BadRequestException('Daily withdrawal limit exceeded');
     }
   }
 
@@ -274,53 +409,127 @@ export class PayoutService {
     return { success: true, message: 'Retry initiated' };
   }
 
+  // Requirement 12.9: Payout reconciliation with providers
+  async reconcileWithdrawals(limit = 50) {
+    const withdrawals = await this.prisma.withdrawal.findMany({
+      where: {
+        status: WithdrawalStatus.processing,
+        provider_ref: { not: null },
+      },
+      orderBy: { updated_at: 'asc' },
+      take: limit,
+    });
+
+    let updated = 0;
+
+    for (const withdrawal of withdrawals) {
+      const status = await this.getProviderStatus(withdrawal.provider, withdrawal.provider_ref);
+
+      if (status.status === 'completed') {
+        await this.prisma.withdrawal.update({
+          where: { id: withdrawal.id },
+          data: { status: WithdrawalStatus.completed, processed_at: new Date() },
+        });
+        updated += 1;
+      }
+
+      if (status.status === 'failed') {
+        await this.handleWithdrawalFailure(withdrawal.id, 'Provider reported failure');
+        updated += 1;
+      }
+    }
+
+    return { checked: withdrawals.length, updated };
+  }
+
+  private async getProviderStatus(provider: WalletProvider, providerRef: string | null) {
+    if (!providerRef) {
+      return { status: 'pending' as const };
+    }
+
+    switch (provider) {
+      case WalletProvider.aba_pay:
+        return this.abaPayProvider.checkStatus(providerRef);
+      case WalletProvider.wing:
+        return this.wingProvider.checkStatus(providerRef);
+      case WalletProvider.true_money:
+        return this.trueMoneyProvider.checkStatus(providerRef);
+      default:
+        return { status: 'pending' as const };
+    }
+  }
+
   // Get supported payment methods
   getSupportedMethods() {
-    return [
-      {
+    const methods = [] as Array<{
+      provider: WalletProvider;
+      name: string;
+      description: string;
+      min_amount: number;
+      currency: string;
+      priority: number;
+    }>;
+
+    if (this.isProviderEnabled(WalletProvider.bakong)) {
+      methods.push({
         provider: WalletProvider.bakong,
         name: 'Bakong',
         description: 'Cambodia National Payment Gateway',
         min_amount: this.MIN_WITHDRAWAL,
         currency: 'USD',
         priority: 1,
-      },
-      {
+      });
+    }
+
+    if (this.isProviderEnabled(WalletProvider.aba_pay)) {
+      methods.push({
         provider: WalletProvider.aba_pay,
         name: 'ABA Pay',
         description: 'ABA Bank Mobile Wallet',
         min_amount: this.MIN_WITHDRAWAL,
         currency: 'USD',
         priority: 2,
-      },
-      {
+      });
+    }
+
+    if (this.isProviderEnabled(WalletProvider.wing)) {
+      methods.push({
         provider: WalletProvider.wing,
         name: 'WING',
         description: 'WING Mobile Wallet',
         min_amount: this.MIN_WITHDRAWAL,
         currency: 'USD',
         priority: 3,
-      },
-      {
+      });
+    }
+
+    if (this.isProviderEnabled(WalletProvider.true_money)) {
+      methods.push({
         provider: WalletProvider.true_money,
         name: 'TrueMoney',
         description: 'TrueMoney Wallet',
         min_amount: this.MIN_WITHDRAWAL,
         currency: 'USD',
         priority: 4,
-      },
-    ];
+      });
+    }
+
+    return methods;
   }
 
   // Get exchange rates (for future multi-currency support)
   getExchangeRates() {
+    const table = this.getExchangeRateTable();
+    return { ...table, updated_at: new Date() };
+  }
+
+  private getExchangeRateTable(): { base: string; rates: Record<string, number> } {
     return {
       base: 'USD',
       rates: {
         USD: 1,
         KHR: 4100, // Cambodian Riel
       },
-      updated_at: new Date(),
     };
   }
 

@@ -40,22 +40,27 @@ export class BakongService {
       terminalLabel = 'ONLINE',
     } = params;
 
-    // EMV KHQR format
+    const currencyCode = currency.toUpperCase() === 'USD' ? '840' : '116';
+    const phoneNumber = this.phoneNumber || '';
+    const amountValue = amount.toFixed(2);
+
+    // EMV KHQR format aligned with Bakong KHQR reference implementation
     const qrData = [
       '00', '02', '01', // Payload Format Indicator
       '01', '12', // Point of Initiation Method (12 = dynamic)
       '29', this.merchantId.length.toString().padStart(2, '0'), this.merchantId, // Merchant Account
       '52', '04', '5999', // Merchant Category Code
-      '53', '03', currency, // Transaction Currency
-      '54', amount.toString().length.toString().padStart(2, '0'), amount.toFixed(2), // Transaction Amount
+      '53', '03', currencyCode, // Transaction Currency
+      '54', amountValue.length.toString().padStart(2, '0'), amountValue, // Transaction Amount
       '58', '02', 'KH', // Country Code
       '59', this.merchantName.length.toString().padStart(2, '0'), this.merchantName, // Merchant Name
       '60', this.merchantCity.length.toString().padStart(2, '0'), this.merchantCity, // Merchant City
       '62', // Additional Data
       [
         '01', billNumber.length.toString().padStart(2, '0'), billNumber, // Bill Number
-        '07', storeLabel.length.toString().padStart(2, '0'), storeLabel, // Store Label
-        '08', terminalLabel.length.toString().padStart(2, '0'), terminalLabel, // Terminal Label
+        '02', phoneNumber.length.toString().padStart(2, '0'), phoneNumber, // Mobile Number
+        '03', storeLabel.length.toString().padStart(2, '0'), storeLabel, // Store Label
+        '07', terminalLabel.length.toString().padStart(2, '0'), terminalLabel, // Terminal Label
       ].join(''),
     ].join('');
 
@@ -71,16 +76,20 @@ export class BakongService {
 
   // Check payment status via Bakong API
   async checkPayment(md5Hash: string): Promise<{
-    status: 'PENDING' | 'PAID' | 'FAILED';
+    status: 'PAID' | 'UNPAID';
     data?: any;
   }> {
     try {
-      const response = await axios.get(`${this.apiUrl}/check_transaction_by_hash`, {
-        params: { hash: md5Hash },
-        headers: {
-          Authorization: `Bearer ${this.developerToken}`,
+      const response = await axios.post(
+        `${this.apiUrl}/check_transaction_by_md5`,
+        { md5: md5Hash },
+        {
+          headers: {
+            Authorization: `Bearer ${this.developerToken}`,
+            'Content-Type': 'application/json',
+          },
         },
-      });
+      );
 
       if (response.data && response.data.responseCode === 0) {
         return {
@@ -89,22 +98,58 @@ export class BakongService {
         };
       }
 
-      return { status: 'PENDING' };
+      return { status: 'UNPAID' };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Bakong API error: ${message}`);
       
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {
-          return { status: 'PENDING' };
+          return { status: 'UNPAID' };
         }
         if (error.response?.status === 403) {
           throw new BadRequestException('Bakong API access denied. Check IP whitelist.');
         }
       }
       
-      throw new BadRequestException('Failed to check payment status');
+      return { status: 'UNPAID' };
     }
+  }
+
+  async generateDeeplink(params: {
+    qrCode: string;
+    callbackUrl?: string;
+    appName?: string;
+    appIconUrl?: string;
+  }): Promise<string | null> {
+    try {
+      const response = await axios.post(
+        `${this.apiUrl}/generate_deeplink_by_qr`,
+        {
+          qr: params.qrCode,
+          sourceInfo: {
+            appIconUrl: params.appIconUrl ?? 'https://bakong.nbc.gov.kh/images/logo.svg',
+            appName: params.appName ?? 'Vibe Survey',
+            appDeepLinkCallback: params.callbackUrl ?? 'https://bakong.nbc.org.kh',
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.developerToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (response.data && response.data.responseCode === 0) {
+        return response.data.data?.shortLink ?? null;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`Bakong deeplink generation failed: ${message}`);
+    }
+
+    return null;
   }
 
   // Process withdrawal to Bakong account
@@ -188,5 +233,9 @@ export class BakongService {
     const accountRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+$/;
     
     return phoneRegex.test(bakongId) || accountRegex.test(bakongId);
+  }
+
+  isConfigured(): boolean {
+    return Boolean(this.merchantId && this.developerToken && this.phoneNumber);
   }
 }

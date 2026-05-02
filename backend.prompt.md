@@ -1,11 +1,7 @@
-
 Act as a senior full stack developer focused on scalable, maintainable, clean code.
 
 Goal: complete one task from a spec under .kiro/specs/ by following the three-file system.
 
-Inputs you should use (ask if missing):
-- Spec folder name under .kiro/specs/
-- Task ID
 
 Three-file workflow (always in this order):
 1) Read tasks.md
@@ -55,9 +51,10 @@ Task: {TASK_ID} - {TASK_TITLE}
   - [ ] Task {TASK_ID} complete
 ```
 
-Now I provide you the task and the location for specific now jsut focus on implement backend only but read the vibe_survey/.kiro/specs/rest-api-design/unified-api-routes.md and then read this more for the backend what you have to do vibe_survey/.kiro/specs//home/rayu/vibe_survey/.kiro/specs/
+Now I provide you the tasks and the location for specific now jsut focus on implement backend only but read the vibe_survey/.kiro/specs/rest-api-design/unified-api-routes.md and then read this more for the backend what you have to do vibe_survey/.kiro/specs//home/rayu/vibe_survey/.kiro/specs/
 
 
-Note: I Provide you the task to start the existing nestjs project that i just create vibe_survey/backend (what you have to implement in that) for the .env can add as the draft i will provide credential into that 
+Note: I Provide you the task to start the existing nestjs project that i just create vibe_survey/backend (what you have to implement in that) for the .env can add as the draft i will provide credential into that Andyou also implement the all the task i provided below: 
+
 
 

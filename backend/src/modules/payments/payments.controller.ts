@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Body, Query, UseGuards, Param } from '@nest
 import { WalletService } from './wallet.service';
 import { PayoutService } from './payout.service';
 import { TransactionQueryDto } from './dto/wallet.dto';
-import { CreateWithdrawalDto } from './dto/withdrawal.dto';
+import { CreateWithdrawalDto } from './dto/withdrawal-request.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
