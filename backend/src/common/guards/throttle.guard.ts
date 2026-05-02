@@ -18,11 +18,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     protected readonly reflector: Reflector,
     protected readonly storageService: RedisThrottlerStorage,
   ) {
-    super(
-      { throttlers: [{ name: 'default', ttl: 60000, limit: 30 }] },
-      storageService,
-      reflector,
-    );
+    super({ throttlers: [{ name: 'default', ttl: 60000, limit: 30 }] }, storageService, reflector);
   }
 
   async handleRequest(requestProps: any): Promise<boolean> {
@@ -46,7 +42,10 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     // Req 19: Add rate limit headers
     const response = context.switchToHttp().getResponse();
     response.header('X-RateLimit-Limit', rateLimits.limit.toString());
-    response.header('X-RateLimit-Remaining', Math.max(0, rateLimits.limit - result.totalHits).toString());
+    response.header(
+      'X-RateLimit-Remaining',
+      Math.max(0, rateLimits.limit - result.totalHits).toString(),
+    );
     response.header('X-RateLimit-Reset', new Date(Date.now() + rateLimits.ttl).toISOString());
 
     if (result.totalHits > rateLimits.limit) {

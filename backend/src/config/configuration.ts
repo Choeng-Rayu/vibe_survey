@@ -3,7 +3,10 @@ export default () => ({
   app: {
     port: parseInt(process.env['PORT'] ?? '3000', 10),
     nodeEnv: process.env['NODE_ENV'] ?? 'development',
-    corsOrigins: (process.env['CORS_ORIGINS'] ?? 'http://localhost:3001,http://localhost:3002,http://localhost:3003').split(','),
+    corsOrigins: (
+      process.env['CORS_ORIGINS'] ??
+      'http://localhost:3001,http://localhost:3002,http://localhost:3003'
+    ).split(','),
     logLevel: process.env['LOG_LEVEL'] ?? 'debug',
   },
   database: {
@@ -29,7 +32,9 @@ export default () => ({
   },
   storage: {
     maxFileSize: parseInt(process.env['MAX_FILE_SIZE'] ?? '10485760', 10),
-    allowedTypes: (process.env['ALLOWED_FILE_TYPES'] ?? 'image/jpeg,image/png,application/pdf').split(','),
+    allowedTypes: (
+      process.env['ALLOWED_FILE_TYPES'] ?? 'image/jpeg,image/png,application/pdf'
+    ).split(','),
   },
   bakong: {
     apiUrl: process.env['BAKONG_API_URL'] ?? 'https://api-bakong.nbc.gov.kh/v1',

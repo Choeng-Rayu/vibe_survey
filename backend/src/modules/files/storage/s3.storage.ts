@@ -1,27 +1,39 @@
-// Req 24.2: S3 storage backend
 import { Injectable, Logger } from '@nestjs/common';
 
+// Req 24: AWS S3 storage provider
 @Injectable()
 export class S3Storage {
   private readonly logger = new Logger(S3Storage.name);
 
-  async save(filename: string, buffer: Buffer): Promise<string> {
-    // Integration with AWS S3 SDK
-    this.logger.log(`File would be saved to S3: ${filename}`);
-    return `s3://bucket/${filename}`;
+  async upload(filename: string, buffer: Buffer, mimetype: string): Promise<string> {
+    // TODO: Integrate with AWS SDK
+    // const s3 = new S3Client({ region: process.env.AWS_REGION });
+    // const command = new PutObjectCommand({
+    //   Bucket: process.env.S3_BUCKET,
+    //   Key: filename,
+    //   Body: buffer,
+    //   ContentType: mimetype,
+    // });
+    // await s3.send(command);
+
+    this.logger.log(`File would be uploaded to S3: ${filename}`);
+    return `s3://${process.env.S3_BUCKET || 'bucket'}/${filename}`;
   }
 
-  async get(key: string): Promise<Buffer> {
-    // Fetch from S3
-    return Buffer.from('');
+  async delete(path: string): Promise<void> {
+    // TODO: Integrate with AWS SDK
+    this.logger.log(`File would be deleted from S3: ${path}`);
   }
 
-  async delete(key: string): Promise<void> {
-    // Delete from S3
-  }
+  async getSignedUrl(path: string, expiresIn: number): Promise<string> {
+    // TODO: Generate signed URL with AWS SDK
+    // const s3 = new S3Client({ region: process.env.AWS_REGION });
+    // const command = new GetObjectCommand({
+    //   Bucket: process.env.S3_BUCKET,
+    //   Key: path.replace(`s3://${process.env.S3_BUCKET}/`, ''),
+    // });
+    // return await getSignedUrl(s3, command, { expiresIn });
 
-  async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
-    // Generate temporary signed URL
-    return `https://s3.amazonaws.com/bucket/${key}?expires=${expiresIn}`;
+    return `https://s3.amazonaws.com/${path}?expires=${expiresIn}`;
   }
 }

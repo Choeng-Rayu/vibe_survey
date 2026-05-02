@@ -10,7 +10,11 @@ export class TracingService {
     return this.tracer.startSpan(name, { attributes });
   }
 
-  async traceAsync<T>(name: string, fn: () => Promise<T>, attributes?: Record<string, any>): Promise<T> {
+  async traceAsync<T>(
+    name: string,
+    fn: () => Promise<T>,
+    attributes?: Record<string, any>,
+  ): Promise<T> {
     const span = this.startSpan(name, attributes);
     try {
       const result = await context.with(trace.setSpan(context.active(), span), fn);

@@ -14,7 +14,10 @@ export class ApprovalWorkflowService {
   async getReviewQueue(params?: { skip?: number; take?: number }) {
     return this.prisma.campaign.findMany({
       where: { status: CampaignStatus.pending_review, deleted_at: null },
-      include: { user: { select: { id: true, email: true } }, survey: { select: { id: true, title: true } } },
+      include: {
+        user: { select: { id: true, email: true } },
+        survey: { select: { id: true, title: true } },
+      },
       orderBy: { updated_at: 'asc' },
       skip: params?.skip ?? 0,
       take: params?.take ?? 20,
@@ -48,7 +51,12 @@ export class ApprovalWorkflowService {
     };
   }
 
-  private async reviewCampaign(campaignId: string, reviewerId: string, action: ReviewAction, note?: string) {
+  private async reviewCampaign(
+    campaignId: string,
+    reviewerId: string,
+    action: ReviewAction,
+    note?: string,
+  ) {
     const campaign = await this.prisma.campaign.findUnique({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
     if (campaign.status !== CampaignStatus.pending_review) {
@@ -83,9 +91,12 @@ export class ApprovalWorkflowService {
 
   private actionToStatus(action: ReviewAction): CampaignStatus {
     switch (action) {
-      case ReviewAction.APPROVE: return CampaignStatus.approved;
-      case ReviewAction.REJECT: return CampaignStatus.rejected;
-      case ReviewAction.REQUEST_REVISION: return CampaignStatus.draft;
+      case ReviewAction.APPROVE:
+        return CampaignStatus.approved;
+      case ReviewAction.REJECT:
+        return CampaignStatus.rejected;
+      case ReviewAction.REQUEST_REVISION:
+        return CampaignStatus.draft;
     }
   }
 }

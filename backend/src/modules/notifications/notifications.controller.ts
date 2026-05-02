@@ -1,59 +1,31 @@
-// Req 16: Notification endpoints
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { NotificationsService } from './notifications.service.js';
-import { TemplateService } from './template.service.js';
 import { SendNotificationDto } from './dto/notification.dto.js';
-import { CreateTemplateDto, UpdateTemplateDto } from './dto/notification-template.dto.js';
 
 @Controller('notifications')
+@UseGuards(JwtAuthGuard)
 export class NotificationsController {
-  constructor(
-    private readonly notificationsService: NotificationsService,
-    private readonly templateService: TemplateService,
-  ) {}
+  constructor(private notificationsService: NotificationsService) {}
 
-  // POST /api/v1/notifications/send
   @Post('send')
-  sendNotification(@Body() dto: SendNotificationDto) {
+  async send(@Body() dto: SendNotificationDto) {
     return this.notificationsService.send(dto);
   }
 
-  // GET /api/v1/notifications
   @Get()
-  getUserNotifications(@Request() req: any, @Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.notificationsService.getUserNotifications(req.user.id, {
-      skip: Number(skip ?? 0),
-      take: Number(take ?? 20),
-    });
+  async getNotifications(@CurrentUser() user: any, @Query('limit') limit?: string) {
+    return this.notificationsService.getUserNotifications(user.id, limit ? parseInt(limit) : 50);
   }
 
-  // PUT /api/v1/notifications/:id/read
   @Put(':id/read')
-  markAsRead(@Param('id') id: string) {
-    return this.notificationsService.markAsRead(id);
+  async markAsRead(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.notificationsService.markAsRead(id, user.id);
   }
 
-  // GET /api/v1/notifications/templates
-  @Get('templates')
-  listTemplates() {
-    return this.templateService.findAll();
-  }
-
-  // POST /api/v1/notifications/templates
-  @Post('templates')
-  createTemplate(@Body() dto: CreateTemplateDto) {
-    return this.templateService.create(dto);
-  }
-
-  // PUT /api/v1/notifications/templates/:id
-  @Put('templates/:id')
-  updateTemplate(@Param('id') id: string, @Body() dto: UpdateTemplateDto) {
-    return this.templateService.update(id, dto);
-  }
-
-  // DELETE /api/v1/notifications/templates/:id
-  @Delete('templates/:id')
-  deleteTemplate(@Param('id') id: string) {
-    return this.templateService.delete(id);
+  @Post('mark-all-read')
+  async markAllAsRead(@CurrentUser() user: any) {
+    return this.notificationsService.markAllAsRead(user.id);
   }
 }

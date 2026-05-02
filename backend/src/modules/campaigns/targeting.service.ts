@@ -10,10 +10,12 @@ export class TargetingService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Requirement 9.2: Real-time audience size estimation
-  async estimateAudienceSize(criteria: TargetingCriteriaDto): Promise<{ estimatedSize: number; criteria: any }> {
+  async estimateAudienceSize(
+    criteria: TargetingCriteriaDto,
+  ): Promise<{ estimatedSize: number; criteria: any }> {
     const where = this.buildWhereClause(criteria);
     const count = await this.prisma.profile.count({ where });
-    
+
     this.logger.log(`Audience size estimated: ${count} users`);
     return { estimatedSize: count, criteria };
   }
@@ -25,50 +27,58 @@ export class TargetingService {
     // Requirement 9.1: Demographic targeting
     if (criteria.demographics) {
       const demo: any = {};
-      
+
       if (criteria.demographics.age_min || criteria.demographics.age_max) {
         const now = new Date();
         if (criteria.demographics.age_max) {
-          const minDate = new Date(now.getFullYear() - criteria.demographics.age_max - 1, now.getMonth(), now.getDate());
+          const minDate = new Date(
+            now.getFullYear() - criteria.demographics.age_max - 1,
+            now.getMonth(),
+            now.getDate(),
+          );
           demo.date_of_birth = { gte: minDate };
         }
         if (criteria.demographics.age_min) {
-          const maxDate = new Date(now.getFullYear() - criteria.demographics.age_min, now.getMonth(), now.getDate());
+          const maxDate = new Date(
+            now.getFullYear() - criteria.demographics.age_min,
+            now.getMonth(),
+            now.getDate(),
+          );
           demo.date_of_birth = { ...demo.date_of_birth, lte: maxDate };
         }
       }
-      
+
       if (criteria.demographics.gender?.length) {
         demo.gender = { in: criteria.demographics.gender };
       }
-      
+
       if (criteria.demographics.education_level?.length) {
         demo.education_level = { in: criteria.demographics.education_level };
       }
-      
+
       if (criteria.demographics.income_range?.length) {
         demo.income_range = { in: criteria.demographics.income_range };
       }
-      
+
       if (Object.keys(demo).length > 0) conditions.push(demo);
     }
 
     // Requirement 9.4: Geographic targeting
     if (criteria.geographic) {
       const geo: any = {};
-      
+
       if (criteria.geographic.countries?.length) {
         geo.country = { in: criteria.geographic.countries };
       }
-      
+
       if (criteria.geographic.regions?.length) {
         geo.region = { in: criteria.geographic.regions };
       }
-      
+
       if (criteria.geographic.cities?.length) {
         geo.city = { in: criteria.geographic.cities };
       }
-      
+
       if (Object.keys(geo).length > 0) conditions.push(geo);
     }
 
@@ -86,7 +96,9 @@ export class TargetingService {
   }
 
   // Requirement 9.8: Targeting validation and conflict detection
-  async validateTargeting(criteria: TargetingCriteriaDto): Promise<{ isValid: boolean; conflicts: string[] }> {
+  async validateTargeting(
+    criteria: TargetingCriteriaDto,
+  ): Promise<{ isValid: boolean; conflicts: string[] }> {
     const conflicts: string[] = [];
 
     // Check for conflicting age ranges
@@ -118,9 +130,21 @@ export class TargetingService {
   async getInterestCategories() {
     return {
       categories: [
-        'technology', 'sports', 'entertainment', 'fashion', 'food',
-        'travel', 'health', 'finance', 'education', 'gaming',
-        'music', 'art', 'politics', 'science', 'business',
+        'technology',
+        'sports',
+        'entertainment',
+        'fashion',
+        'food',
+        'travel',
+        'health',
+        'finance',
+        'education',
+        'gaming',
+        'music',
+        'art',
+        'politics',
+        'science',
+        'business',
       ],
     };
   }
@@ -178,11 +202,15 @@ export class TargetingService {
     const size = await this.estimateAudienceSize(criteria);
 
     if (size.estimatedSize < 100) {
-      recommendations.push('Audience size is very small. Consider broadening your targeting criteria.');
+      recommendations.push(
+        'Audience size is very small. Consider broadening your targeting criteria.',
+      );
     }
 
     if (size.estimatedSize > 100000) {
-      recommendations.push('Audience size is very large. Consider narrowing your targeting for better relevance.');
+      recommendations.push(
+        'Audience size is very large. Consider narrowing your targeting for better relevance.',
+      );
     }
 
     if (!criteria.interests || criteria.interests.length === 0) {
@@ -198,8 +226,8 @@ export class TargetingService {
 
   private findCommonInterests(profiles: any[]): string[] {
     const interestCounts = new Map<string, number>();
-    
-    profiles.forEach(profile => {
+
+    profiles.forEach((profile) => {
       profile.interests?.forEach((interest: string) => {
         interestCounts.set(interest, (interestCounts.get(interest) || 0) + 1);
       });
@@ -213,8 +241,8 @@ export class TargetingService {
 
   private findCommonValues(profiles: any[], field: string): string[] {
     const valueCounts = new Map<string, number>();
-    
-    profiles.forEach(profile => {
+
+    profiles.forEach((profile) => {
       const value = profile[field];
       if (value) {
         valueCounts.set(value, (valueCounts.get(value) || 0) + 1);

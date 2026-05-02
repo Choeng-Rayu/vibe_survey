@@ -1,27 +1,27 @@
-// Req 16.1: In-app notification channel
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service.js';
-import { NotificationChannel, NotificationStatus } from '@prisma/client';
 
+// Req 16: In-app notification channel
 @Injectable()
 export class InAppChannel {
   private readonly logger = new Logger(InAppChannel.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async send(userId: string, title: string, body: string, data?: any): Promise<boolean> {
-    await this.prisma.notification.create({
+  async send(userId: string, payload: any) {
+    const notification = await this.prisma.notification.create({
       data: {
         user_id: userId,
-        channel: NotificationChannel.in_app,
-        status: NotificationStatus.sent,
-        title,
-        body,
-        data: data ?? {},
-        sent_at: new Date(),
+        type: payload.type,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data || {},
+        read_at: null,
       },
     });
-    this.logger.log(`In-app notification created for user ${userId}`);
-    return true;
+
+    this.logger.log(`Created in-app notification for user ${userId}`);
+
+    return { channel: 'in_app', sent: true, notificationId: notification.id };
   }
 }

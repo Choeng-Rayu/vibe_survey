@@ -17,7 +17,18 @@ import { PaymentsModule } from '../payments/payments.module';
 @Module({
   imports: [DatabaseModule, FraudDetectionModule, PaymentsModule],
   controllers: [SurveysController],
-  providers: [SurveysService, SurveysRepository, SurveyValidationService, SurveyVersioningService, TemplateService, QuestionBankService, SurveyImportExportService, SurveyFeedService, ResponseService, ResponseRepository],
+  providers: [
+    SurveysService,
+    SurveysRepository,
+    SurveyValidationService,
+    SurveyVersioningService,
+    TemplateService,
+    QuestionBankService,
+    SurveyImportExportService,
+    SurveyFeedService,
+    ResponseService,
+    ResponseRepository,
+  ],
   exports: [SurveysService],
 })
 export class SurveysModule {}

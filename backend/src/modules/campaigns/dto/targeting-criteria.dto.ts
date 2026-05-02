@@ -1,4 +1,13 @@
-import { IsOptional, IsArray, IsString, IsNumber, IsEnum, Min, Max, IsObject } from 'class-validator';
+import {
+  IsOptional,
+  IsArray,
+  IsString,
+  IsNumber,
+  IsEnum,
+  Min,
+  Max,
+  IsObject,
+} from 'class-validator';
 
 // Requirement 9: Audience Targeting - Targeting Criteria DTO
 export class DemographicCriteriaDto {

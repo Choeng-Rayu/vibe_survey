@@ -89,10 +89,23 @@ export class PaymentGatewayService {
 
     if (risk.requires_review) {
       this.logger.warn(`Payment ${transaction.id} flagged for review`);
-      return this.buildPaymentResponse(transaction.id, TransactionStatus.pending, dto.amount, paymentCurrency, provider, invoice.id);
+      return this.buildPaymentResponse(
+        transaction.id,
+        TransactionStatus.pending,
+        dto.amount,
+        paymentCurrency,
+        provider,
+        invoice.id,
+      );
     }
 
-    return this.createBakongPayment(transaction.id, dto.amount, paymentCurrency, invoice.id, metadata);
+    return this.createBakongPayment(
+      transaction.id,
+      dto.amount,
+      paymentCurrency,
+      invoice.id,
+      metadata,
+    );
   }
 
   // Requirement 17.4/17.8: Retry failed payment attempts
@@ -137,7 +150,7 @@ export class PaymentGatewayService {
     const statusOverrides = await this.refreshPendingBakongPayments(items);
 
     return {
-      payments: items.map(item => ({
+      payments: items.map((item) => ({
         id: item.id,
         amount: Number(this.readMetadata(item.metadata).payment_amount ?? item.amount),
         currency: this.readMetadata(item.metadata).payment_currency ?? item.currency,
@@ -170,7 +183,10 @@ export class PaymentGatewayService {
     await this.prisma.$transaction([
       this.prisma.transaction.update({
         where: { id: transaction.id },
-        data: { status: TransactionStatus.reversed, metadata: { ...transactionMetadata, refund_reason: dto.reason } },
+        data: {
+          status: TransactionStatus.reversed,
+          metadata: { ...transactionMetadata, refund_reason: dto.reason },
+        },
       }),
       this.prisma.transaction.create({
         data: {
@@ -226,7 +242,7 @@ export class PaymentGatewayService {
     return {
       total_payments: totals._count.id,
       total_amount: Number(totals._sum.amount ?? 0),
-      status_breakdown: byStatus.map(item => ({
+      status_breakdown: byStatus.map((item) => ({
         status: item.status,
         count: item._count.id,
         amount: Number(item._sum.amount ?? 0),
@@ -249,7 +265,7 @@ export class PaymentGatewayService {
     const items = hasMore ? invoices.slice(0, limit) : invoices;
 
     return {
-      invoices: items.map(invoice => ({
+      invoices: items.map((invoice) => ({
         id: invoice.id,
         amount: Number(invoice.amount),
         currency: invoice.currency,
@@ -283,7 +299,10 @@ export class PaymentGatewayService {
   }
 
   async addPaymentMethod(userId: string, dto: AddPaymentMethodDto) {
-    if (dto.provider !== PaymentGatewayProvider.bakong || dto.method_type !== PaymentMethodType.mobile_wallet) {
+    if (
+      dto.provider !== PaymentGatewayProvider.bakong ||
+      dto.method_type !== PaymentMethodType.mobile_wallet
+    ) {
       throw new BadRequestException('Only Bakong mobile wallet methods are supported');
     }
 
@@ -319,7 +338,7 @@ export class PaymentGatewayService {
       orderBy: [{ is_default: 'desc' }, { created_at: 'desc' }],
     });
 
-    return methods.map(method => this.mapPaymentMethod(method));
+    return methods.map((method) => this.mapPaymentMethod(method));
   }
 
   async removePaymentMethod(userId: string, methodId: string) {
@@ -397,7 +416,9 @@ export class PaymentGatewayService {
     const toRate = rateTable[toCurrency];
 
     if (!fromRate || !toRate) {
-      throw new BadRequestException(`Exchange rate unavailable for ${fromCurrency} to ${toCurrency}`);
+      throw new BadRequestException(
+        `Exchange rate unavailable for ${fromCurrency} to ${toCurrency}`,
+      );
     }
 
     const amountInBase = fromCurrency === rates.base ? amount : amount / fromRate;
@@ -462,12 +483,20 @@ export class PaymentGatewayService {
 
     const deeplink = await this.bakongService.generateDeeplink({ qrCode });
 
-    return this.buildPaymentResponse(transactionId, TransactionStatus.pending, amount, currency, PaymentGatewayProvider.bakong, invoiceId, {
-      type: 'qr',
-      qr_code: qrCode,
-      md5_hash: md5Hash,
-      deep_link: deeplink,
-    });
+    return this.buildPaymentResponse(
+      transactionId,
+      TransactionStatus.pending,
+      amount,
+      currency,
+      PaymentGatewayProvider.bakong,
+      invoiceId,
+      {
+        type: 'qr',
+        qr_code: qrCode,
+        md5_hash: md5Hash,
+        deep_link: deeplink,
+      },
+    );
   }
 
   private async completePayment(
@@ -558,7 +587,14 @@ export class PaymentGatewayService {
     return transaction;
   }
 
-  private mapPaymentMethod(method: { id: string; provider: PaymentGatewayProvider; method_type: PaymentMethodType; label?: string | null; last4?: string | null; is_default: boolean }) {
+  private mapPaymentMethod(method: {
+    id: string;
+    provider: PaymentGatewayProvider;
+    method_type: PaymentMethodType;
+    label?: string | null;
+    last4?: string | null;
+    is_default: boolean;
+  }) {
     return {
       id: method.id,
       provider: method.provider,
@@ -577,7 +613,9 @@ export class PaymentGatewayService {
     return metadata as Record<string, unknown>;
   }
 
-  private async refreshPendingBakongPayments(transactions: Array<{ id: string; status: TransactionStatus; metadata: unknown }>) {
+  private async refreshPendingBakongPayments(
+    transactions: Array<{ id: string; status: TransactionStatus; metadata: unknown }>,
+  ) {
     const updates = new Map<string, TransactionStatus>();
 
     for (const transaction of transactions) {

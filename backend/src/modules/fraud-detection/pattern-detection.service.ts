@@ -4,7 +4,6 @@ import { FraudSignals } from './dto/fraud-analysis.dto';
 // Requirement 11.4: Detect common fraud patterns (straight-lining, auto-clicking, honeypot violations)
 @Injectable()
 export class PatternDetectionService {
-
   detectPatterns(
     surveyDefinition: any,
     answers: Record<string, any>,
@@ -52,7 +51,9 @@ export class PatternDetectionService {
 
   // Detect repetitive answer patterns
   private detectPatternAnswers(answers: Record<string, any>): boolean {
-    const values = Object.values(answers).filter(v => typeof v === 'number' || typeof v === 'string');
+    const values = Object.values(answers).filter(
+      (v) => typeof v === 'number' || typeof v === 'string',
+    );
     if (values.length < 5) return false;
 
     // Check for alternating pattern (1,2,1,2,1,2)
@@ -70,10 +71,14 @@ export class PatternDetectionService {
   // Requirement 11.4: Honeypot question detection
   private detectHoneypotViolation(surveyDefinition: any, answers: Record<string, any>): boolean {
     const honeypots = surveyDefinition?.questions?.filter((q: any) => q.is_honeypot) || [];
-    
+
     for (const honeypot of honeypots) {
       // Honeypot questions should not be answered (they're hidden)
-      if (answers[honeypot.id] !== undefined && answers[honeypot.id] !== null && answers[honeypot.id] !== '') {
+      if (
+        answers[honeypot.id] !== undefined &&
+        answers[honeypot.id] !== null &&
+        answers[honeypot.id] !== ''
+      ) {
         return true;
       }
     }

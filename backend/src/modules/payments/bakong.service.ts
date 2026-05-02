@@ -46,21 +46,46 @@ export class BakongService {
 
     // EMV KHQR format aligned with Bakong KHQR reference implementation
     const qrData = [
-      '00', '02', '01', // Payload Format Indicator
-      '01', '12', // Point of Initiation Method (12 = dynamic)
-      '29', this.merchantId.length.toString().padStart(2, '0'), this.merchantId, // Merchant Account
-      '52', '04', '5999', // Merchant Category Code
-      '53', '03', currencyCode, // Transaction Currency
-      '54', amountValue.length.toString().padStart(2, '0'), amountValue, // Transaction Amount
-      '58', '02', 'KH', // Country Code
-      '59', this.merchantName.length.toString().padStart(2, '0'), this.merchantName, // Merchant Name
-      '60', this.merchantCity.length.toString().padStart(2, '0'), this.merchantCity, // Merchant City
+      '00',
+      '02',
+      '01', // Payload Format Indicator
+      '01',
+      '12', // Point of Initiation Method (12 = dynamic)
+      '29',
+      this.merchantId.length.toString().padStart(2, '0'),
+      this.merchantId, // Merchant Account
+      '52',
+      '04',
+      '5999', // Merchant Category Code
+      '53',
+      '03',
+      currencyCode, // Transaction Currency
+      '54',
+      amountValue.length.toString().padStart(2, '0'),
+      amountValue, // Transaction Amount
+      '58',
+      '02',
+      'KH', // Country Code
+      '59',
+      this.merchantName.length.toString().padStart(2, '0'),
+      this.merchantName, // Merchant Name
+      '60',
+      this.merchantCity.length.toString().padStart(2, '0'),
+      this.merchantCity, // Merchant City
       '62', // Additional Data
       [
-        '01', billNumber.length.toString().padStart(2, '0'), billNumber, // Bill Number
-        '02', phoneNumber.length.toString().padStart(2, '0'), phoneNumber, // Mobile Number
-        '03', storeLabel.length.toString().padStart(2, '0'), storeLabel, // Store Label
-        '07', terminalLabel.length.toString().padStart(2, '0'), terminalLabel, // Terminal Label
+        '01',
+        billNumber.length.toString().padStart(2, '0'),
+        billNumber, // Bill Number
+        '02',
+        phoneNumber.length.toString().padStart(2, '0'),
+        phoneNumber, // Mobile Number
+        '03',
+        storeLabel.length.toString().padStart(2, '0'),
+        storeLabel, // Store Label
+        '07',
+        terminalLabel.length.toString().padStart(2, '0'),
+        terminalLabel, // Terminal Label
       ].join(''),
     ].join('');
 
@@ -102,7 +127,7 @@ export class BakongService {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Bakong API error: ${message}`);
-      
+
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {
           return { status: 'UNPAID' };
@@ -111,7 +136,7 @@ export class BakongService {
           throw new BadRequestException('Bakong API access denied. Check IP whitelist.');
         }
       }
-      
+
       return { status: 'UNPAID' };
     }
   }
@@ -197,7 +222,7 @@ export class BakongService {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Bakong withdrawal error: ${message}`);
-      
+
       return {
         success: false,
         error: message,
@@ -207,12 +232,12 @@ export class BakongService {
 
   // Calculate CRC16 checksum for KHQR
   private calculateCRC(data: string): string {
-    let crc = 0xFFFF;
+    let crc = 0xffff;
     const polynomial = 0x1021;
 
     for (let i = 0; i < data.length; i++) {
       crc ^= data.charCodeAt(i) << 8;
-      
+
       for (let j = 0; j < 8; j++) {
         if ((crc & 0x8000) !== 0) {
           crc = (crc << 1) ^ polynomial;
@@ -222,7 +247,7 @@ export class BakongService {
       }
     }
 
-    crc = crc & 0xFFFF;
+    crc = crc & 0xffff;
     return crc.toString(16).toUpperCase().padStart(4, '0');
   }
 
@@ -231,7 +256,7 @@ export class BakongService {
     // Bakong ID format: phone number or account@bank
     const phoneRegex = /^855\d{8,9}$/;
     const accountRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+$/;
-    
+
     return phoneRegex.test(bakongId) || accountRegex.test(bakongId);
   }
 

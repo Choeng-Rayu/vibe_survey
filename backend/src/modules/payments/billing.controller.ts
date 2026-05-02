@@ -3,7 +3,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { WalletService } from './wallet.service';
 import { PaymentGatewayService } from './payment-gateway.service';
-import { AddPaymentMethodDto, CreatePaymentRequestDto, PaymentHistoryQueryDto } from './dto/payment-request.dto';
+import {
+  AddPaymentMethodDto,
+  CreatePaymentRequestDto,
+  PaymentHistoryQueryDto,
+} from './dto/payment-request.dto';
 
 // Requirement 17: Billing and payment gateway endpoints
 @Controller('billing')

@@ -24,7 +24,7 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     const current = await this.cacheService.get<number>(key);
     const totalHits = (current || 0) + 1;
     await this.cacheService.set(key, totalHits, Math.ceil(ttl / 1000));
-    
+
     return {
       totalHits,
       timeToExpire: ttl,

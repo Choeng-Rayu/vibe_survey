@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException, ConflictException, Logger } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +10,59 @@ import { RegisterDto, LoginDto } from './dto';
 // Requirement 3: Authentication and Authorization System
 @Injectable()
 export class AuthService {
+  // Handles OAuth logins (e.g., Google, Telegram)
+  async validateOAuthLogin(
+    provider: string,
+    providerId: string,
+    email: string,
+    firstName?: string,
+    lastName?: string,
+  ) {
+    // Find existing OAuth linking
+    const existingLink = await this.prisma.oAuthAccount.findUnique({
+      where: {
+        provider_provider_id: {
+          provider,
+          provider_id: providerId,
+        },
+      },
+      include: { user: true },
+    });
+    if (existingLink && existingLink.user) {
+      return existingLink.user;
+    }
+
+    // No link; try to find user by email
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Create new user with default role
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          role: Role.survey_taker,
+        },
+      });
+      // Create a profile record (optional name extraction)
+      await this.prisma.profile.create({
+        data: {
+          user_id: user.id,
+          first_name: firstName,
+          last_name: lastName,
+        },
+      });
+    }
+
+    // Create OAuthAccount linking
+    await this.prisma.oAuthAccount.create({
+      data: {
+        user_id: user.id,
+        provider,
+        provider_id: providerId,
+      },
+    });
+    return user;
+  }
+
   private readonly logger = new Logger(AuthService.name);
   private readonly saltRounds = 10;
 
@@ -42,7 +96,10 @@ export class AuthService {
     });
 
     this.logger.log(`User registered: ${email}`);
-    return { user: { id: user.id, email: user.email, role: user.role }, message: 'Registration successful' };
+    return {
+      user: { id: user.id, email: user.email, role: user.role },
+      message: 'Registration successful',
+    };
   }
 
   async login(loginDto: LoginDto) {
@@ -89,9 +146,54 @@ export class AuthService {
     return bcrypt.hash(password, this.saltRounds);
   }
 
+  /**
+   * Public wrapper for token generation used by OAuth flows.
+   */
+  async issueTokens(userId: string, email: string, role: Role) {
+    return this.generateTokens(userId, email, role);
+  }
+
+  /**
+   * Verify Telegram login data and return (or create) the associated user.
+   * @param authData Query parameters received from Telegram login widget.
+   */
+  async validateTelegramLogin(authData: Record<string, string>) {
+    const hash = authData['hash'];
+    if (!hash) {
+      throw new UnauthorizedException('Missing Telegram hash');
+    }
+    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    if (!token) {
+      throw new UnauthorizedException('Telegram bot token not configured');
+    }
+    const secretKey = crypto.createHash('sha256').update(token).digest();
+    const dataCheckString = Object.entries(authData)
+      .filter(([k]) => k !== 'hash')
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join('\n');
+    const calculatedHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+    if (calculatedHash !== hash) {
+      throw new UnauthorizedException('Invalid Telegram auth data');
+    }
+    // Optional: check auth_date freshness (max 1 day)
+    const authDate = Number(authData['auth_date'] ?? '0');
+    if (Date.now() / 1000 - authDate > 86400) {
+      throw new UnauthorizedException('Telegram auth data is outdated');
+    }
+    const providerId = authData['id'];
+    const email = `${providerId}@telegram`; // placeholder email
+    const firstName = authData['first_name'];
+    const lastName = authData['last_name'];
+    return this.validateOAuthLogin('telegram', providerId, email, firstName, lastName);
+  }
+
   private async generateTokens(userId: string, email: string, role: Role) {
     const payload = { sub: userId, email, role: role as string };
-    
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.get('jwt.secret'),

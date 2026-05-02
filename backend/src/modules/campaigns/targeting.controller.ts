@@ -44,7 +44,7 @@ export class TargetingController {
   createLookalikeAudience(@Body() dto: LookalikeAudienceDto) {
     return this.targetingService.createLookalikeAudience(
       dto.source_user_ids,
-      dto.similarity_threshold
+      dto.similarity_threshold,
     );
   }
 

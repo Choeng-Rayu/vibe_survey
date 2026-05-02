@@ -40,14 +40,15 @@ export class SurveysService {
   async findOne(id: string, userId: string, role: string) {
     const survey = await this.prisma.survey.findUnique({ where: { id } });
     if (!survey || survey.deleted_at) throw new NotFoundException('Survey not found');
-    if (role !== 'admin' && survey.user_id !== userId) throw new ForbiddenException('Access denied');
+    if (role !== 'admin' && survey.user_id !== userId)
+      throw new ForbiddenException('Access denied');
     return survey;
   }
 
   async update(id: string, userId: string, role: string, dto: UpdateSurveyDto) {
     const survey = await this.findOne(id, userId, role);
     if (dto.definition) this.validationService.validateAndThrow(dto.definition);
-    
+
     const updated = await this.prisma.survey.update({
       where: { id },
       data: {

@@ -35,7 +35,7 @@ export class TrueMoneyProvider implements WalletProviderInterface {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${this.apiKey}`,
             'Content-Type': 'application/json',
           },
         },
@@ -64,13 +64,10 @@ export class TrueMoneyProvider implements WalletProviderInterface {
     details?: any;
   }> {
     try {
-      const response = await axios.get(
-        `${this.apiUrl}/api/v1/transfer/status`,
-        {
-          params: { transaction_id: transactionRef },
-          headers: { 'Authorization': `Bearer ${this.apiKey}` },
-        },
-      );
+      const response = await axios.get(`${this.apiUrl}/api/v1/transfer/status`, {
+        params: { transaction_id: transactionRef },
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      });
 
       const status = response.data?.status?.toLowerCase();
       return {

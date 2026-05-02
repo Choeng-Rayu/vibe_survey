@@ -7,11 +7,7 @@ import { DatabaseModule } from '../../database/database.module';
 // Requirement 11: Fraud Detection System
 @Module({
   imports: [DatabaseModule],
-  providers: [
-    FraudDetectionService,
-    BehavioralAnalysisService,
-    PatternDetectionService,
-  ],
+  providers: [FraudDetectionService, BehavioralAnalysisService, PatternDetectionService],
   exports: [FraudDetectionService],
 })
 export class FraudDetectionModule {}

@@ -23,7 +23,10 @@ export class AnalyticsService {
 
     const responses = await this.repository.getCampaignResponses(campaignId, startDate, endDate);
     const metrics = this.aggregation.calculateMetrics(campaign as any);
-    const trend = this.aggregation.aggregateByDate(responses, query.group_by ?? AnalyticsGroupBy.DAY);
+    const trend = this.aggregation.aggregateByDate(
+      responses,
+      query.group_by ?? AnalyticsGroupBy.DAY,
+    );
 
     this.logger.log(`Analytics fetched for campaign ${campaignId}`);
     return { campaign, metrics, trend };

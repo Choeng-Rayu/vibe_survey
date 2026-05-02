@@ -19,7 +19,16 @@ export class AdminService {
     }
     return this.prisma.user.findMany({
       where,
-      select: { id: true, email: true, phone: true, role: true, is_suspended: true, is_banned: true, trust_tier: true, created_at: true },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        role: true,
+        is_suspended: true,
+        is_banned: true,
+        trust_tier: true,
+        created_at: true,
+      },
       skip: params?.skip ?? 0,
       take: params?.take ?? 20,
       orderBy: { created_at: 'desc' },
@@ -43,7 +52,13 @@ export class AdminService {
       data: { is_suspended: true, suspension_reason: reason },
     });
     await this.prisma.auditLog.create({
-      data: { user_id: adminId, action: 'suspend', entity_type: 'user', entity_id: userId, new_value: { reason } as any },
+      data: {
+        user_id: adminId,
+        action: 'suspend',
+        entity_type: 'user',
+        entity_id: userId,
+        new_value: { reason } as any,
+      },
     });
     this.logger.log(`User ${userId} suspended by ${adminId}`);
     return user;
@@ -56,7 +71,13 @@ export class AdminService {
       data: { is_banned: true, ban_reason: reason },
     });
     await this.prisma.auditLog.create({
-      data: { user_id: adminId, action: 'ban', entity_type: 'user', entity_id: userId, new_value: { reason } as any },
+      data: {
+        user_id: adminId,
+        action: 'ban',
+        entity_type: 'user',
+        entity_id: userId,
+        new_value: { reason } as any,
+      },
     });
     this.logger.log(`User ${userId} banned by ${adminId}`);
     return user;
@@ -69,13 +90,24 @@ export class AdminService {
       data: { is_banned: false, ban_reason: null },
     });
     await this.prisma.auditLog.create({
-      data: { user_id: adminId, action: 'update', entity_type: 'user', entity_id: userId, new_value: { is_banned: false } as any },
+      data: {
+        user_id: adminId,
+        action: 'update',
+        entity_type: 'user',
+        entity_id: userId,
+        new_value: { is_banned: false } as any,
+      },
     });
     return user;
   }
 
   /** Req 14.5: Get audit logs */
-  async getAuditLogs(params?: { skip?: number; take?: number; entity_type?: string; action?: string }) {
+  async getAuditLogs(params?: {
+    skip?: number;
+    take?: number;
+    entity_type?: string;
+    action?: string;
+  }) {
     return this.prisma.auditLog.findMany({
       where: {
         ...(params?.entity_type ? { entity_type: params.entity_type } : {}),

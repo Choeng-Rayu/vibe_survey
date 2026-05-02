@@ -1,5 +1,15 @@
 // Req 22: Webhook management endpoints
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { WebhooksService } from './webhooks.service.js';
 import { WebhookDeliveryService } from './webhook-delivery.service.js';
 import { CreateWebhookDto, UpdateWebhookDto } from './dto/webhook.dto.js';
@@ -35,7 +45,7 @@ export class WebhooksController {
   async test(@Request() req: any, @Param('id') id: string) {
     const webhook = await this.webhooksService.findOne(id, req.user.id);
     if (!webhook) throw new Error('Webhook not found');
-    
+
     await this.deliveryService.deliver(id, 'test', { message: 'Test webhook delivery' });
     return { success: true };
   }
@@ -45,4 +55,3 @@ export class WebhooksController {
     return this.deliveryService.getDeliveries(id);
   }
 }
-

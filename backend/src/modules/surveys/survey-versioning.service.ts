@@ -8,9 +8,21 @@ export class SurveyVersioningService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async createVersion(surveyId: string, version: number, definition: any, createdBy: string, changeNote?: string) {
+  async createVersion(
+    surveyId: string,
+    version: number,
+    definition: any,
+    createdBy: string,
+    changeNote?: string,
+  ) {
     const surveyVersion = await this.prisma.surveyVersion.create({
-      data: { survey_id: surveyId, version, definition, created_by: createdBy, change_note: changeNote },
+      data: {
+        survey_id: surveyId,
+        version,
+        definition,
+        created_by: createdBy,
+        change_note: changeNote,
+      },
     });
     this.logger.log(`Version ${version} created for survey: ${surveyId}`);
     return surveyVersion;
@@ -41,7 +53,13 @@ export class SurveyVersioningService {
       data: { definition: targetVersionData.definition as any, version: survey.version + 1 },
     });
 
-    await this.createVersion(surveyId, updated.version, targetVersionData.definition, userId, `Rolled back to version ${targetVersion}`);
+    await this.createVersion(
+      surveyId,
+      updated.version,
+      targetVersionData.definition,
+      userId,
+      `Rolled back to version ${targetVersion}`,
+    );
     this.logger.log(`Survey ${surveyId} rolled back to version ${targetVersion}`);
     return updated;
   }
@@ -57,9 +75,11 @@ export class SurveyVersioningService {
   private generateDiff(def1: any, def2: any): string[] {
     const changes: string[] = [];
     if (JSON.stringify(def1) === JSON.stringify(def2)) return ['No changes'];
-    
+
     if (def1.questions?.length !== def2.questions?.length) {
-      changes.push(`Question count changed: ${def1.questions?.length || 0} → ${def2.questions?.length || 0}`);
+      changes.push(
+        `Question count changed: ${def1.questions?.length || 0} → ${def2.questions?.length || 0}`,
+      );
     }
     return changes.length > 0 ? changes : ['Structure modified'];
   }

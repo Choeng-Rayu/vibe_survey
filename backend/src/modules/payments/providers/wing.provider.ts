@@ -64,12 +64,9 @@ export class WingProvider implements WalletProviderInterface {
     details?: any;
   }> {
     try {
-      const response = await axios.get(
-        `${this.apiUrl}/v1/payout/status/${transactionRef}`,
-        {
-          headers: { 'X-API-Key': this.apiKey },
-        },
-      );
+      const response = await axios.get(`${this.apiUrl}/v1/payout/status/${transactionRef}`, {
+        headers: { 'X-API-Key': this.apiKey },
+      });
 
       const status = response.data?.status?.toLowerCase();
       return {

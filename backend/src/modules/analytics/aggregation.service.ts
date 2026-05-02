@@ -4,7 +4,10 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class AggregationService {
   /** Aggregate responses by date bucket (day/week/month) */
-  aggregateByDate(responses: Array<{ created_at: Date; completed_at?: Date | null }>, groupBy: 'day' | 'week' | 'month') {
+  aggregateByDate(
+    responses: Array<{ created_at: Date; completed_at?: Date | null }>,
+    groupBy: 'day' | 'week' | 'month',
+  ) {
     const buckets = new Map<string, { total: number; completed: number }>();
 
     for (const r of responses) {
@@ -16,12 +19,22 @@ export class AggregationService {
     }
 
     return Array.from(buckets.entries())
-      .map(([date, counts]) => ({ date, ...counts, completion_rate: counts.total ? counts.completed / counts.total : 0 }))
+      .map(([date, counts]) => ({
+        date,
+        ...counts,
+        completion_rate: counts.total ? counts.completed / counts.total : 0,
+      }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   /** Demographic segmentation from response user profiles */
-  aggregateDemographics(profiles: Array<{ gender?: string | null; country?: string | null; education_level?: string | null }>) {
+  aggregateDemographics(
+    profiles: Array<{
+      gender?: string | null;
+      country?: string | null;
+      education_level?: string | null;
+    }>,
+  ) {
     const gender: Record<string, number> = {};
     const country: Record<string, number> = {};
     const education: Record<string, number> = {};
@@ -62,7 +75,8 @@ export class AggregationService {
 
   private dateBucket(date: Date, groupBy: 'day' | 'week' | 'month'): string {
     const d = new Date(date);
-    if (groupBy === 'month') return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (groupBy === 'month')
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (groupBy === 'week') {
       const startOfWeek = new Date(d);
       startOfWeek.setDate(d.getDate() - d.getDay());

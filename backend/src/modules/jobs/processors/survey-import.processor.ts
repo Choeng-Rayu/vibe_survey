@@ -14,7 +14,7 @@ export class SurveyImportProcessor {
 
     // Req 23.4: Job progress tracking
     await job.progress(25);
-    
+
     // Process survey import
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await job.progress(75);

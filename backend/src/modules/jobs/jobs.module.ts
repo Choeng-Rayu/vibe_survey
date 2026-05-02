@@ -17,10 +17,22 @@ import { NotificationProcessor } from './processors/notification.processor.js';
     }),
     // Req 23.2, 23.3: Job scheduling, retry logic with exponential backoff
     BullModule.registerQueue(
-      { name: 'survey-import', defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 2000 } } },
-      { name: 'analytics', defaultJobOptions: { attempts: 2, backoff: { type: 'exponential', delay: 1000 } } },
-      { name: 'payout', defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 5000 } } },
-      { name: 'notification', defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 1000 } } },
+      {
+        name: 'survey-import',
+        defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+      },
+      {
+        name: 'analytics',
+        defaultJobOptions: { attempts: 2, backoff: { type: 'exponential', delay: 1000 } },
+      },
+      {
+        name: 'payout',
+        defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 5000 } },
+      },
+      {
+        name: 'notification',
+        defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
+      },
     ),
   ],
   providers: [SurveyImportProcessor, AnalyticsProcessor, PayoutProcessor, NotificationProcessor],

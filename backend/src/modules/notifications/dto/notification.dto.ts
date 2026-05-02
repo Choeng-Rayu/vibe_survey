@@ -1,13 +1,14 @@
-// Req 16: Notification System
-import { IsString, IsOptional, IsEnum, IsObject } from 'class-validator';
-import { NotificationChannel } from '@prisma/client';
+import { IsString, IsArray, IsOptional, IsObject } from 'class-validator';
 
 export class SendNotificationDto {
   @IsString()
-  user_id!: string;
+  userId!: string;
 
-  @IsEnum(NotificationChannel)
-  channel!: NotificationChannel;
+  @IsArray()
+  channels!: ('email' | 'sms' | 'push' | 'in_app')[];
+
+  @IsString()
+  type!: string;
 
   @IsString()
   title!: string;
@@ -18,8 +19,18 @@ export class SendNotificationDto {
   @IsOptional()
   @IsObject()
   data?: Record<string, any>;
+}
+
+export class NotificationPreferencesDto {
+  @IsOptional()
+  email?: boolean;
 
   @IsOptional()
-  @IsString()
-  template_id?: string;
+  sms?: boolean;
+
+  @IsOptional()
+  push?: boolean;
+
+  @IsOptional()
+  in_app?: boolean;
 }

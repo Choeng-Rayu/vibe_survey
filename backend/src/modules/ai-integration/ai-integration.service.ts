@@ -21,9 +21,11 @@ export class AiIntegrationService {
 
     // Requirement 6.2 & 28.3: Validate prompt for injection attempts
     const validation = this.promptValidation.validatePrompt(userId, dto.prompt || '');
-    
+
     if (!validation.isValid) {
-      this.logger.warn(`Blocked prompt from user ${userId}: ${validation.blockedReasons.join(', ')}`);
+      this.logger.warn(
+        `Blocked prompt from user ${userId}: ${validation.blockedReasons.join(', ')}`,
+      );
       throw new ForbiddenException({
         message: 'Prompt validation failed',
         reasons: validation.blockedReasons,
@@ -56,7 +58,7 @@ export class AiIntegrationService {
   private async generateSurvey(prompt: string, context?: any): Promise<any> {
     // Requirement 6.1: AI survey generation
     this.logger.log(`Generating survey from prompt: ${prompt.substring(0, 50)}...`);
-    
+
     // Mock AI response - replace with actual AI service call
     return {
       mode: 'generate',
@@ -64,9 +66,7 @@ export class AiIntegrationService {
         title: 'AI Generated Survey',
         description: `Survey generated from: ${prompt}`,
         definition: {
-          questions: [
-            { id: 'q1', type: 'text', text: 'Sample question from AI', required: true },
-          ],
+          questions: [{ id: 'q1', type: 'text', text: 'Sample question from AI', required: true }],
         },
       },
       diff: null,
@@ -76,7 +76,7 @@ export class AiIntegrationService {
   private async modifySurvey(prompt: string, context: any): Promise<any> {
     // Requirement 6.6: Diff generation for AI modifications
     this.logger.log(`Modifying survey with prompt: ${prompt.substring(0, 50)}...`);
-    
+
     return {
       mode: 'modify',
       survey: context,
@@ -91,7 +91,7 @@ export class AiIntegrationService {
   private async enhanceSurvey(context: any): Promise<any> {
     // Requirement 6.5: AI-powered survey enhancement
     this.logger.log('Enhancing survey');
-    
+
     return {
       mode: 'enhance',
       suggestions: [
@@ -104,7 +104,7 @@ export class AiIntegrationService {
   private async translateSurvey(context: any, targetLanguage?: string): Promise<any> {
     // Requirement 6.5: AI-powered translation
     this.logger.log(`Translating survey to: ${targetLanguage}`);
-    
+
     return {
       mode: 'translate',
       survey: context,
@@ -115,7 +115,7 @@ export class AiIntegrationService {
   private async analyzeSurvey(context: any): Promise<any> {
     // Requirement 6.9: AI-powered survey analysis
     this.logger.log('Analyzing survey');
-    
+
     return {
       mode: 'analyze',
       analysis: {
@@ -129,7 +129,7 @@ export class AiIntegrationService {
   private async normalizeSurvey(context: any): Promise<any> {
     // Normalize imported survey data
     this.logger.log('Normalizing survey');
-    
+
     return {
       mode: 'normalize',
       survey: context,

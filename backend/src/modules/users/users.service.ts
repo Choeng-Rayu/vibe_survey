@@ -48,7 +48,7 @@ export class UsersService {
   async verifyEmail(dto: VerifyEmailDto) {
     const userId = this.verificationTokens.get(dto.token);
     if (!userId) throw new BadRequestException('Invalid verification token');
-    
+
     await this.prisma.user.update({ where: { id: userId }, data: { is_email_verified: true } });
     this.verificationTokens.delete(dto.token);
     this.logger.log(`Email verified for user: ${userId}`);
@@ -70,7 +70,7 @@ export class UsersService {
   async verifyPhone(userId: string, dto: VerifyPhoneDto) {
     const storedOtp = this.phoneOtps.get(userId);
     if (!storedOtp || storedOtp !== dto.otp) throw new BadRequestException('Invalid OTP');
-    
+
     await this.prisma.user.update({ where: { id: userId }, data: { is_phone_verified: true } });
     this.phoneOtps.delete(userId);
     this.logger.log(`Phone verified for user: ${userId}`);
@@ -95,7 +95,10 @@ export class UsersService {
     else if (newScore >= 40) tier = 'silver';
     else tier = 'bronze';
 
-    await this.prisma.user.update({ where: { id: userId }, data: { trust_score: newScore, trust_tier: tier } });
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { trust_score: newScore, trust_tier: tier },
+    });
     this.logger.log(`Trust score updated for user: ${userId} - ${tier} (${newScore})`);
     return { trustTier: tier, trustScore: newScore };
   }

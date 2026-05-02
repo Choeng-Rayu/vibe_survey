@@ -21,7 +21,7 @@ export class AiIntegrationController {
     // Check cache first
     const cacheKey = this.cacheService.generateKey(userId, dto.prompt, dto.mode);
     const cached = await this.cacheService.get(cacheKey);
-    
+
     if (cached) {
       return { ...cached, cached: true };
     }

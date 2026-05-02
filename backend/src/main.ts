@@ -29,7 +29,11 @@ async function bootstrap() {
 
   // Req 19.4: CORS configuration
   app.enableCors({
-    origin: process.env['CORS_ORIGINS']?.split(',') || ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'],
+    origin: process.env['CORS_ORIGINS']?.split(',') || [
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

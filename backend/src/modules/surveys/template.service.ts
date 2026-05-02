@@ -26,7 +26,9 @@ export class TemplateService {
   }
 
   async getTemplates(category?: string) {
-    const where = category ? { is_template: true, template_category: category } : { is_template: true };
+    const where = category
+      ? { is_template: true, template_category: category }
+      : { is_template: true };
     return this.prisma.survey.findMany({ where, orderBy: { created_at: 'desc' } });
   }
 

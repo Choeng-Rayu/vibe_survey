@@ -32,16 +32,19 @@ export class ResponseRepository {
     });
   }
 
-  async update(id: string, data: {
-    answers?: any;
-    behavioral_data?: any;
-    time_spent?: number;
-    status?: ResponseStatus;
-    completed_at?: Date;
-    fraud_score?: number;
-    fraud_signals?: any;
-    quality_label?: string;
-  }) {
+  async update(
+    id: string,
+    data: {
+      answers?: any;
+      behavioral_data?: any;
+      time_spent?: number;
+      status?: ResponseStatus;
+      completed_at?: Date;
+      fraud_score?: number;
+      fraud_signals?: any;
+      quality_label?: string;
+    },
+  ) {
     return this.prisma.response.update({ where: { id }, data });
   }
 

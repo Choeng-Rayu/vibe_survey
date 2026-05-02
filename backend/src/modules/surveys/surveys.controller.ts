@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { SurveysService } from './surveys.service';
@@ -46,22 +59,39 @@ export class SurveysController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser('userId') userId: string, @CurrentUser('role') role: string) {
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
     return this.surveysService.findOne(id, userId, role);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @CurrentUser('userId') userId: string, @CurrentUser('role') role: string, @Body() dto: UpdateSurveyDto) {
+  update(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+    @Body() dto: UpdateSurveyDto,
+  ) {
     return this.surveysService.update(id, userId, role, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser('userId') userId: string, @CurrentUser('role') role: string) {
+  remove(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
     return this.surveysService.remove(id, userId, role);
   }
 
   @Post(':id/duplicate')
-  duplicate(@Param('id') id: string, @CurrentUser('userId') userId: string, @CurrentUser('role') role: string) {
+  duplicate(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
     return this.surveysService.duplicate(id, userId, role);
   }
 
@@ -76,7 +106,11 @@ export class SurveysController {
   }
 
   @Post(':id/versions/:version/rollback')
-  rollback(@Param('id') id: string, @Param('version') version: string, @CurrentUser('userId') userId: string) {
+  rollback(
+    @Param('id') id: string,
+    @Param('version') version: string,
+    @CurrentUser('userId') userId: string,
+  ) {
     return this.versioningService.rollback(id, parseInt(version), userId);
   }
 
@@ -86,7 +120,11 @@ export class SurveysController {
   }
 
   @Post(':id/template')
-  createTemplate(@Param('id') id: string, @CurrentUser('userId') userId: string, @Body() dto: CreateTemplateDto) {
+  createTemplate(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: CreateTemplateDto,
+  ) {
     return this.templateService.createTemplate(userId, id, dto);
   }
 
@@ -96,7 +134,11 @@ export class SurveysController {
   }
 
   @Post('templates/:id/instantiate')
-  instantiateTemplate(@Param('id') id: string, @CurrentUser('userId') userId: string, @Body('title') title: string) {
+  instantiateTemplate(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @Body('title') title: string,
+  ) {
     return this.templateService.instantiateTemplate(id, userId, title);
   }
 
@@ -122,7 +164,11 @@ export class SurveysController {
   }
 
   @Put('questions/:id')
-  updateQuestion(@Param('id') id: string, @CurrentUser('userId') userId: string, @Body() dto: CreateQuestionBankDto) {
+  updateQuestion(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: CreateQuestionBankDto,
+  ) {
     return this.questionBankService.update(id, userId, dto);
   }
 
@@ -132,7 +178,11 @@ export class SurveysController {
   }
 
   @Get(':id/export')
-  async exportSurvey(@Param('id') id: string, @Query('format') format: string, @Res() res: Response) {
+  async exportSurvey(
+    @Param('id') id: string,
+    @Query('format') format: string,
+    @Res() res: Response,
+  ) {
     if (format === 'json') {
       const data = await this.importExportService.exportToJSON(id);
       res.setHeader('Content-Type', 'application/json');
@@ -140,7 +190,10 @@ export class SurveysController {
       return res.send(data);
     } else if (format === 'excel') {
       const buffer = await this.importExportService.exportToExcel(id);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
       res.setHeader('Content-Disposition', `attachment; filename="survey-${id}.xlsx"`);
       return res.send(buffer);
     } else if (format === 'pdf') {
@@ -154,7 +207,11 @@ export class SurveysController {
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
-  async importSurvey(@UploadedFile() file: Express.Multer.File, @CurrentUser('userId') userId: string, @Query('format') format: string) {
+  async importSurvey(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser('userId') userId: string,
+    @Query('format') format: string,
+  ) {
     if (format === 'excel') {
       return this.importExportService.importFromExcel(file.buffer, userId);
     } else if (format === 'json') {
@@ -199,18 +256,30 @@ export class SurveysController {
 
   // Requirement 10.7: Survey completion and submission
   @Post(':id/start')
-  startSurvey(@Param('id') surveyId: string, @CurrentUser('userId') userId: string, @Body() dto: StartSurveyDto) {
+  startSurvey(
+    @Param('id') surveyId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: StartSurveyDto,
+  ) {
     return this.responseService.startSurvey(userId, { ...dto, survey_id: surveyId });
   }
 
   @Post(':id/responses')
-  submitResponse(@Param('id') surveyId: string, @CurrentUser('userId') userId: string, @Body() dto: SubmitResponseDto) {
+  submitResponse(
+    @Param('id') surveyId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: SubmitResponseDto,
+  ) {
     return this.responseService.submitResponse(userId, { ...dto, survey_id: surveyId });
   }
 
   // Requirement 10.6: Auto-save functionality
   @Put(':id/responses/autosave')
-  autoSave(@Param('id') surveyId: string, @CurrentUser('userId') userId: string, @Body() dto: AutoSaveDto) {
+  autoSave(
+    @Param('id') surveyId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: AutoSaveDto,
+  ) {
     return this.responseService.autoSave(userId, surveyId, dto);
   }
 
@@ -221,7 +290,11 @@ export class SurveysController {
   }
 
   @Post(':id/complete')
-  completeSurvey(@Param('id') surveyId: string, @CurrentUser('userId') userId: string, @Body() dto: SubmitResponseDto) {
+  completeSurvey(
+    @Param('id') surveyId: string,
+    @CurrentUser('userId') userId: string,
+    @Body() dto: SubmitResponseDto,
+  ) {
     return this.responseService.submitResponse(userId, { ...dto, survey_id: surveyId });
   }
 }

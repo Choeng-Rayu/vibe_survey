@@ -1,47 +1,47 @@
-// Req 16.2: Notification templating and personalization
-import { IsString, IsOptional, IsEnum, IsArray, IsBoolean } from 'class-validator';
-import { NotificationChannel } from '@prisma/client';
+import { IsString, IsArray, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateTemplateDto {
   @IsString()
   name!: string;
 
-  @IsEnum(NotificationChannel)
-  channel!: NotificationChannel;
+  @IsString()
+  type!: string;
+
+  @IsString()
+  subject!: string;
+
+  @IsString()
+  body!: string;
 
   @IsOptional()
   @IsString()
-  subject?: string;
-
-  @IsString()
-  body_en!: string;
-
-  @IsOptional()
-  @IsString()
-  body_km?: string; // Khmer translation
+  language?: string; // 'en' or 'km' (Khmer)
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
   variables?: string[];
 
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean = true;
+  is_active?: boolean;
 }
 
 export class UpdateTemplateDto {
   @IsOptional()
   @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
   subject?: string;
 
   @IsOptional()
   @IsString()
-  body_en?: string;
+  body?: string;
 
   @IsOptional()
-  @IsString()
-  body_km?: string;
+  @IsArray()
+  variables?: string[];
 
   @IsOptional()
   @IsBoolean()

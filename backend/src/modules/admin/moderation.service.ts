@@ -36,7 +36,12 @@ export class ModerationService {
   }
 
   /** Req 14.2: Take moderation action */
-  async takeAction(itemId: string, reviewerId: string, action: ModerationActionType, note?: string) {
+  async takeAction(
+    itemId: string,
+    reviewerId: string,
+    action: ModerationActionType,
+    note?: string,
+  ) {
     const item = await this.prisma.moderationItem.findUnique({ where: { id: itemId } });
     if (!item) throw new NotFoundException('Moderation item not found');
 
@@ -72,10 +77,13 @@ export class ModerationService {
 
   private actionToStatus(action: ModerationActionType): ModerationStatus {
     switch (action) {
-      case ModerationActionType.APPROVE: return ModerationStatus.approved;
+      case ModerationActionType.APPROVE:
+        return ModerationStatus.approved;
       case ModerationActionType.REJECT:
-      case ModerationActionType.REMOVE: return ModerationStatus.rejected;
-      case ModerationActionType.FLAG: return ModerationStatus.flagged;
+      case ModerationActionType.REMOVE:
+        return ModerationStatus.rejected;
+      case ModerationActionType.FLAG:
+        return ModerationStatus.flagged;
     }
   }
 }

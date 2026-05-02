@@ -31,7 +31,11 @@ export class FraudDetectionService {
     const behavioralMetrics = this.behavioralAnalysis.analyzeBehavior(behavioralData);
 
     // Requirement 11.4: Detect fraud patterns
-    const fraudSignals = this.patternDetection.detectPatterns(surveyDefinition, answers, behavioralData);
+    const fraudSignals = this.patternDetection.detectPatterns(
+      surveyDefinition,
+      answers,
+      behavioralData,
+    );
 
     // Calculate fraud score based on signals
     if (fraudSignals.failed_attention_checks) {
@@ -153,14 +157,19 @@ export class FraudDetectionService {
   private isSuspiciousDevice(fingerprint: DeviceFingerprint): boolean {
     const suspiciousAgents = ['headless', 'phantom', 'selenium', 'puppeteer', 'bot'];
     const userAgent = fingerprint.user_agent.toLowerCase();
-    
-    return suspiciousAgents.some(agent => userAgent.includes(agent));
+
+    return suspiciousAgents.some((agent) => userAgent.includes(agent));
   }
 
   // Requirement 11.8: Manual fraud review capabilities
-  async reviewResponse(responseId: string, action: 'approve' | 'reject', reviewerId: string, note?: string) {
+  async reviewResponse(
+    responseId: string,
+    action: 'approve' | 'reject',
+    reviewerId: string,
+    note?: string,
+  ) {
     const response = await this.prisma.response.findUnique({ where: { id: responseId } });
-    
+
     if (!response) {
       throw new Error('Response not found');
     }
@@ -186,7 +195,7 @@ export class FraudDetectionService {
     });
 
     this.logger.log(`Response ${responseId} manually reviewed: ${action} by ${reviewerId}`);
-    
+
     return { success: true, action, response_id: responseId };
   }
 

@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TransactionType, TransactionStatus } from '@prisma/client';
-import { CreateTransactionDto, TransactionQueryDto, WalletBalanceDto, TransactionHistoryDto } from './dto/wallet.dto';
+import {
+  CreateTransactionDto,
+  TransactionQueryDto,
+  WalletBalanceDto,
+  TransactionHistoryDto,
+} from './dto/wallet.dto';
 
 // Requirement 12.1: Points calculation and wallet management
 // Requirement 12.5: Transaction history and status tracking
@@ -15,7 +20,7 @@ export class WalletService {
   // Get or create wallet for user
   async getOrCreateWallet(userId: string) {
     let wallet = await this.prisma.wallet.findUnique({ where: { user_id: userId } });
-    
+
     if (!wallet) {
       wallet = await this.prisma.wallet.create({
         data: { user_id: userId, balance: 0, points: 0 },
@@ -124,7 +129,10 @@ export class WalletService {
   }
 
   // Requirement 12.5: Transaction history with pagination
-  async getTransactionHistory(userId: string, query: TransactionQueryDto): Promise<TransactionHistoryDto> {
+  async getTransactionHistory(
+    userId: string,
+    query: TransactionQueryDto,
+  ): Promise<TransactionHistoryDto> {
     const wallet = await this.getOrCreateWallet(userId);
     const limit = query.limit || 50;
 
@@ -146,7 +154,7 @@ export class WalletService {
     const items = hasMore ? transactions.slice(0, limit) : transactions;
 
     return {
-      transactions: items.map(t => ({
+      transactions: items.map((t) => ({
         id: t.id,
         type: t.type,
         amount: Number(t.amount),

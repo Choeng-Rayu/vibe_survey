@@ -102,14 +102,16 @@ export class ResponseService {
       await this.recordCampaignSpending(dto.campaign_id, userId);
     }
 
-    this.logger.log(`Response submitted: ${response.id} with fraud score ${fraudAnalysis.fraud_score}`);
+    this.logger.log(
+      `Response submitted: ${response.id} with fraud score ${fraudAnalysis.fraud_score}`,
+    );
     return updated;
   }
 
   // Requirement 10.6: Auto-save functionality for survey progress
   async autoSave(userId: string, surveyId: string, dto: AutoSaveDto) {
     let response = await this.responseRepo.findInProgress(userId, surveyId);
-    
+
     if (!response) {
       response = await this.responseRepo.create({
         survey_id: surveyId,
@@ -131,7 +133,7 @@ export class ResponseService {
   // Requirement 10.10: Survey resume functionality
   async resumeSurvey(userId: string, surveyId: string) {
     const response = await this.responseRepo.findInProgress(userId, surveyId);
-    
+
     if (!response) {
       throw new NotFoundException('No in-progress survey found');
     }
@@ -149,18 +151,18 @@ export class ResponseService {
   getNextQuestion(surveyDefinition: any, answers: Record<string, any>, currentQuestionId: string) {
     const questions = surveyDefinition.questions || [];
     const currentIndex = questions.findIndex((q: any) => q.id === currentQuestionId);
-    
+
     if (currentIndex === -1) return null;
 
     const currentQuestion = questions[currentIndex];
-    
+
     // Check for branching logic
     if (currentQuestion.branching_logic) {
       const answer = answers[currentQuestionId];
-      const branch = currentQuestion.branching_logic.find((b: any) => 
-        b.condition_value === answer || b.condition_values?.includes(answer)
+      const branch = currentQuestion.branching_logic.find(
+        (b: any) => b.condition_value === answer || b.condition_values?.includes(answer),
       );
-      
+
       if (branch?.next_question_id) {
         return questions.find((q: any) => q.id === branch.next_question_id);
       }
@@ -183,7 +185,7 @@ export class ResponseService {
       // Validate answer format based on question type
       if (answers[question.id]) {
         const answer = answers[question.id];
-        
+
         if (question.type === 'multiple_choice' && question.max_selections) {
           if (Array.isArray(answer) && answer.length > question.max_selections) {
             errors.push(`Question ${question.id} exceeds max selections`);
@@ -191,7 +193,10 @@ export class ResponseService {
         }
 
         if (question.type === 'rating' && question.scale) {
-          if (typeof answer === 'number' && (answer < question.scale.min || answer > question.scale.max)) {
+          if (
+            typeof answer === 'number' &&
+            (answer < question.scale.min || answer > question.scale.max)
+          ) {
             errors.push(`Question ${question.id} rating out of range`);
           }
         }
@@ -222,7 +227,7 @@ export class ResponseService {
       // Award points to user using WalletService
       const points = this.walletService.calculatePoints(cpr);
       const response = await this.responseRepo.findInProgress(userId, campaign.survey_id);
-      
+
       if (response) {
         await this.walletService.awardPoints(
           userId,

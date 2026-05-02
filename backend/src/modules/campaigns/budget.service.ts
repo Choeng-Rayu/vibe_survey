@@ -38,7 +38,10 @@ export class BudgetService {
       cpr: Number(campaign.cpr),
       max_responses: campaign.max_responses,
       response_count: campaign.response_count,
-      estimated_responses_remaining: this.estimateRemainingResponses(remaining, Number(campaign.cpr)),
+      estimated_responses_remaining: this.estimateRemainingResponses(
+        remaining,
+        Number(campaign.cpr),
+      ),
     };
   }
 
@@ -131,7 +134,10 @@ export class BudgetService {
     });
 
     // Auto-complete if budget/responses exhausted
-    if (newSpent >= Number(campaign.budget_total) || (campaign.max_responses && newCount >= campaign.max_responses)) {
+    if (
+      newSpent >= Number(campaign.budget_total) ||
+      (campaign.max_responses && newCount >= campaign.max_responses)
+    ) {
       await this.prisma.campaign.update({
         where: { id: campaignId },
         data: { status: 'completed' },
@@ -159,7 +165,8 @@ export class BudgetService {
 
     const remaining = Number(campaign.budget_total) - Number(campaign.budget_spent);
     const hasBudget = remaining >= Number(campaign.cpr);
-    const hasResponsesLeft = !campaign.max_responses || campaign.response_count < campaign.max_responses;
+    const hasResponsesLeft =
+      !campaign.max_responses || campaign.response_count < campaign.max_responses;
 
     return hasBudget && hasResponsesLeft;
   }
@@ -201,7 +208,10 @@ export class BudgetService {
       return { forecast: 'Insufficient data for forecast' };
     }
 
-    const daysActive = Math.max(1, Math.floor((Date.now() - campaign.created_at.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysActive = Math.max(
+      1,
+      Math.floor((Date.now() - campaign.created_at.getTime()) / (1000 * 60 * 60 * 24)),
+    );
     const responsesPerDay = campaign.response_count / daysActive;
     const remaining = Number(campaign.budget_total) - Number(campaign.budget_spent);
     const responsesRemaining = Math.floor(remaining / Number(campaign.cpr));
@@ -233,7 +243,7 @@ export class BudgetService {
 
     if (Math.abs(discrepancy) > 0.01) {
       this.logger.warn(`Budget discrepancy for campaign ${campaignId}: ${discrepancy}`);
-      
+
       await this.prisma.campaign.update({
         where: { id: campaignId },
         data: {

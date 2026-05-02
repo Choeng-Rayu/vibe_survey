@@ -1,26 +1,43 @@
-// Req 24.2: Local storage backend
 import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
+// Req 24: Local file storage provider
 @Injectable()
 export class LocalStorage {
   private readonly logger = new Logger(LocalStorage.name);
-  private readonly uploadDir = './uploads';
+  private readonly uploadDir = join(process.cwd(), 'uploads');
 
-  async save(filename: string, buffer: Buffer): Promise<string> {
-    await fs.mkdir(this.uploadDir, { recursive: true });
-    const filepath = path.join(this.uploadDir, filename);
-    await fs.writeFile(filepath, buffer);
-    this.logger.log(`File saved locally: ${filename}`);
-    return filepath;
+  constructor() {
+    this.ensureUploadDir();
   }
 
-  async get(filepath: string): Promise<Buffer> {
-    return fs.readFile(filepath);
+  private async ensureUploadDir() {
+    try {
+      await fs.mkdir(this.uploadDir, { recursive: true });
+    } catch (error) {
+      this.logger.error('Failed to create upload directory', error);
+    }
   }
 
-  async delete(filepath: string): Promise<void> {
-    await fs.unlink(filepath);
+  async upload(filename: string, buffer: Buffer, mimetype: string): Promise<string> {
+    const path = join(this.uploadDir, filename);
+    await fs.writeFile(path, buffer);
+    this.logger.log(`File saved locally: ${path}`);
+    return path;
+  }
+
+  async delete(path: string): Promise<void> {
+    try {
+      await fs.unlink(path);
+      this.logger.log(`File deleted: ${path}`);
+    } catch (error) {
+      this.logger.error(`Failed to delete file: ${path}`, error);
+    }
+  }
+
+  async getSignedUrl(path: string, expiresIn: number): Promise<string> {
+    // For local storage, return a simple file path
+    return `file://${path}`;
   }
 }

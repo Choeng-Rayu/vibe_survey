@@ -69,7 +69,7 @@ export class PayoutService {
     await this.walletService.deductBalance(userId, amountInWalletCurrency);
 
     // Process withdrawal asynchronously
-    this.processWithdrawal(withdrawal.id).catch(err => {
+    this.processWithdrawal(withdrawal.id).catch((err) => {
       this.logger.error(`Withdrawal processing failed: ${err.message}`);
     });
 
@@ -131,7 +131,9 @@ export class PayoutService {
     provider: WalletProvider,
   ) {
     const normalizedWalletCurrency = this.normalizeCurrencyCode(walletCurrency);
-    const payoutCurrency = this.normalizeCurrencyCode(requestedCurrency ?? normalizedWalletCurrency);
+    const payoutCurrency = this.normalizeCurrencyCode(
+      requestedCurrency ?? normalizedWalletCurrency,
+    );
 
     if (!this.isCurrencySupported(normalizedWalletCurrency)) {
       throw new BadRequestException(`Unsupported wallet currency: ${normalizedWalletCurrency}`);
@@ -146,7 +148,11 @@ export class PayoutService {
       throw new BadRequestException(`Provider does not support ${payoutCurrency}`);
     }
 
-    const amountInWalletCurrency = this.convertAmount(amount, payoutCurrency, normalizedWalletCurrency);
+    const amountInWalletCurrency = this.convertAmount(
+      amount,
+      payoutCurrency,
+      normalizedWalletCurrency,
+    );
 
     return {
       payoutAmount: this.roundAmount(amount),
@@ -186,7 +192,9 @@ export class PayoutService {
     const toRate = rates.rates[toCurrency];
 
     if (!fromRate || !toRate) {
-      throw new BadRequestException(`Exchange rate unavailable for ${fromCurrency} to ${toCurrency}`);
+      throw new BadRequestException(
+        `Exchange rate unavailable for ${fromCurrency} to ${toCurrency}`,
+      );
     }
 
     const amountInBase = fromCurrency === rates.base ? amount : amount / fromRate;
@@ -197,7 +205,11 @@ export class PayoutService {
     return Math.round(amount * 100) / 100;
   }
 
-  private async enforceWithdrawalLimits(walletId: string, amountInWalletCurrency: number, walletCurrency: string) {
+  private async enforceWithdrawalLimits(
+    walletId: string,
+    amountInWalletCurrency: number,
+    walletCurrency: string,
+  ) {
     if (amountInWalletCurrency < this.MIN_WITHDRAWAL) {
       throw new BadRequestException(`Minimum withdrawal is $${this.MIN_WITHDRAWAL}`);
     }
@@ -213,7 +225,9 @@ export class PayoutService {
       where: {
         wallet_id: walletId,
         created_at: { gte: startOfDay },
-        status: { in: [WithdrawalStatus.pending, WithdrawalStatus.processing, WithdrawalStatus.completed] },
+        status: {
+          in: [WithdrawalStatus.pending, WithdrawalStatus.processing, WithdrawalStatus.completed],
+        },
       },
       select: { amount: true, currency: true },
     });
@@ -221,7 +235,9 @@ export class PayoutService {
     const normalizedWalletCurrency = this.normalizeCurrencyCode(walletCurrency);
     const dailyTotal = withdrawals.reduce((sum, withdrawal) => {
       const currency = this.normalizeCurrencyCode(withdrawal.currency);
-      return sum + this.convertAmount(Number(withdrawal.amount), currency, normalizedWalletCurrency);
+      return (
+        sum + this.convertAmount(Number(withdrawal.amount), currency, normalizedWalletCurrency)
+      );
     }, 0);
 
     if (dailyTotal + amountInWalletCurrency > this.DAILY_WITHDRAWAL_LIMIT) {
@@ -232,7 +248,7 @@ export class PayoutService {
   // Process withdrawal with provider-specific logic
   private async processWithdrawal(withdrawalId: string) {
     const withdrawal = await this.prisma.withdrawal.findUnique({ where: { id: withdrawalId } });
-    
+
     if (!withdrawal) return;
 
     try {
@@ -304,7 +320,7 @@ export class PayoutService {
   // Requirement 12.6: Handle withdrawal failure with retry logic
   private async handleWithdrawalFailure(withdrawalId: string, error: string) {
     const withdrawal = await this.prisma.withdrawal.findUnique({ where: { id: withdrawalId } });
-    
+
     if (!withdrawal) return;
 
     const retryCount = withdrawal.retry_count + 1;
@@ -312,7 +328,7 @@ export class PayoutService {
     if (retryCount < this.MAX_RETRY_ATTEMPTS) {
       // Schedule retry with exponential backoff
       const delay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
-      
+
       await this.prisma.withdrawal.update({
         where: { id: withdrawalId },
         data: {
@@ -323,12 +339,14 @@ export class PayoutService {
       });
 
       setTimeout(() => {
-        this.processWithdrawal(withdrawalId).catch(err => {
+        this.processWithdrawal(withdrawalId).catch((err) => {
           this.logger.error(`Retry failed: ${err.message}`);
         });
       }, delay);
 
-      this.logger.warn(`Withdrawal ${withdrawalId} scheduled for retry ${retryCount}/${this.MAX_RETRY_ATTEMPTS}`);
+      this.logger.warn(
+        `Withdrawal ${withdrawalId} scheduled for retry ${retryCount}/${this.MAX_RETRY_ATTEMPTS}`,
+      );
     } else {
       await this.prisma.withdrawal.update({
         where: { id: withdrawalId },
@@ -337,7 +355,9 @@ export class PayoutService {
           failure_reason: error,
         },
       });
-      this.logger.error(`Withdrawal ${withdrawalId} failed after ${this.MAX_RETRY_ATTEMPTS} attempts: ${error}`);
+      this.logger.error(
+        `Withdrawal ${withdrawalId} failed after ${this.MAX_RETRY_ATTEMPTS} attempts: ${error}`,
+      );
     }
   }
 
@@ -351,7 +371,7 @@ export class PayoutService {
       take: 50,
     });
 
-    return withdrawals.map(w => this.mapWithdrawalDto(w));
+    return withdrawals.map((w) => this.mapWithdrawalDto(w));
   }
 
   // Get withdrawal status
@@ -401,7 +421,7 @@ export class PayoutService {
       },
     });
 
-    this.processWithdrawal(withdrawalId).catch(err => {
+    this.processWithdrawal(withdrawalId).catch((err) => {
       this.logger.error(`Manual retry failed: ${err.message}`);
     });
 

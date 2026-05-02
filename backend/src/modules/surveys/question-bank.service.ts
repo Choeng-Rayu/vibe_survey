@@ -43,7 +43,12 @@ export class QuestionBankService {
 
     const updated = await this.prisma.questionBank.update({
       where: { id },
-      data: { title: dto.title, definition: dto.definition, tags: dto.tags, is_public: dto.is_public },
+      data: {
+        title: dto.title,
+        definition: dto.definition,
+        tags: dto.tags,
+        is_public: dto.is_public,
+      },
     });
     this.logger.log(`Question bank updated: ${id}`);
     return updated;

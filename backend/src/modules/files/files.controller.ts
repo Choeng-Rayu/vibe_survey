@@ -1,42 +1,61 @@
-// Req 24: File management endpoints
-import { Controller, Post, Get, Delete, Param, Body, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  UseGuards,
+  Body,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { FilesService } from './files.service.js';
 import { FileUploadDto } from './dto/file-upload.dto.js';
 
 @Controller('files')
+@UseGuards(JwtAuthGuard)
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(private filesService: FilesService) {}
 
-  // POST /api/v1/files/upload
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@Request() req: any, @UploadedFile() file: Express.Multer.File, @Body() dto: FileUploadDto) {
+  async upload(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: FileUploadDto,
+    @CurrentUser() user: any,
+  ) {
     return this.filesService.upload(
-      req.user.id,
-      file.originalname,
+      {
+        ...dto,
+        filename: file.filename || file.originalname,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+      },
       file.buffer,
-      file.mimetype,
-      dto.storage_type,
-      dto.is_temporary,
+      user.id,
     );
   }
 
-  // GET /api/v1/files/:id
   @Get(':id')
-  getFileMetadata(@Param('id') id: string) {
-    return { message: 'File metadata', id };
+  async getFile(@Param('id') id: string) {
+    return this.filesService.findOne(id);
   }
 
-  // GET /api/v1/files/temporary/:id/url
-  @Get('temporary/:id/url')
-  getTemporaryUrl(@Param('id') id: string) {
-    return this.filesService.getTemporaryUrl(id);
-  }
-
-  // DELETE /api/v1/files/:id
   @Delete(':id')
-  deleteFile(@Param('id') id: string) {
-    return this.filesService.deleteFile(id);
+  async deleteFile(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.filesService.delete(id, user.id);
+  }
+
+  @Get(':id/metadata')
+  async getMetadata(@Param('id') id: string) {
+    return this.filesService.getMetadata(id);
+  }
+
+  @Get('temporary/:id/url')
+  async getTemporaryUrl(@Param('id') id: string) {
+    return this.filesService.getTemporaryUrl(id);
   }
 }

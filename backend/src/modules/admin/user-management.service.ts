@@ -64,7 +64,12 @@ export class UserManagementService {
     return user;
   }
 
-  private async performAction(userId: string, adminId: string, action: UserAction, reason?: string) {
+  private async performAction(
+    userId: string,
+    adminId: string,
+    action: UserAction,
+    reason?: string,
+  ) {
     switch (action) {
       case UserAction.SUSPEND:
         return this.prisma.user.update({
@@ -91,7 +96,16 @@ export class UserManagementService {
 
   private toCSV(data: any[]): string {
     if (!data.length) return '';
-    const keys = ['id', 'email', 'phone', 'role', 'is_suspended', 'is_banned', 'trust_tier', 'created_at'];
+    const keys = [
+      'id',
+      'email',
+      'phone',
+      'role',
+      'is_suspended',
+      'is_banned',
+      'trust_tier',
+      'created_at',
+    ];
     const header = keys.join(',');
     const rows = data.map((row) => keys.map((k) => JSON.stringify(row[k] ?? '')).join(','));
     return [header, ...rows].join('\n');

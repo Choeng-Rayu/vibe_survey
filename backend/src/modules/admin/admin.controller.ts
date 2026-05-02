@@ -22,7 +22,10 @@ export class AdminController {
   // GET /api/v1/admin/campaigns/review-queue
   @Get('campaigns/review-queue')
   getReviewQueue(@Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.approvalWorkflow.getReviewQueue({ skip: Number(skip ?? 0), take: Number(take ?? 20) });
+    return this.approvalWorkflow.getReviewQueue({
+      skip: Number(skip ?? 0),
+      take: Number(take ?? 20),
+    });
   }
 
   // POST /api/v1/admin/campaigns/:id/approve
@@ -54,12 +57,19 @@ export class AdminController {
   // GET /api/v1/admin/moderation/queue
   @Get('moderation/queue')
   getModerationQueue(@Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.moderation.getModerationQueue({ skip: Number(skip ?? 0), take: Number(take ?? 20) });
+    return this.moderation.getModerationQueue({
+      skip: Number(skip ?? 0),
+      take: Number(take ?? 20),
+    });
   }
 
   // POST /api/v1/admin/moderation/:id/action
   @Post('moderation/:id/action')
-  takeModerationAction(@Param('id') id: string, @Request() req: any, @Body() dto: ModerationActionDto) {
+  takeModerationAction(
+    @Param('id') id: string,
+    @Request() req: any,
+    @Body() dto: ModerationActionDto,
+  ) {
     return this.moderation.takeAction(id, req.user.id, dto.action, dto.note);
   }
 
@@ -79,8 +89,16 @@ export class AdminController {
 
   // GET /api/v1/admin/users
   @Get('users')
-  listUsers(@Query('skip') skip?: string, @Query('take') take?: string, @Query('search') search?: string) {
-    return this.adminService.listUsers({ skip: Number(skip ?? 0), take: Number(take ?? 20), search });
+  listUsers(
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.listUsers({
+      skip: Number(skip ?? 0),
+      take: Number(take ?? 20),
+      search,
+    });
   }
 
   // GET /api/v1/admin/users/:id
@@ -135,6 +153,11 @@ export class AdminController {
     @Query('entity_type') entity_type?: string,
     @Query('action') action?: string,
   ) {
-    return this.adminService.getAuditLogs({ skip: Number(skip ?? 0), take: Number(take ?? 50), entity_type, action });
+    return this.adminService.getAuditLogs({
+      skip: Number(skip ?? 0),
+      take: Number(take ?? 50),
+      entity_type,
+      action,
+    });
   }
 }

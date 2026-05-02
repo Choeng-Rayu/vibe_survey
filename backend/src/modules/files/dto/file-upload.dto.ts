@@ -1,24 +1,21 @@
-// Req 24: File Storage and Management
-import { IsString, IsOptional, IsBoolean, IsEnum } from 'class-validator';
-
-export enum StorageType {
-  LOCAL = 'local',
-  S3 = 's3',
-  R2 = 'r2',
-}
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class FileUploadDto {
   @IsString()
-  filename!: string;
-
-  @IsString()
-  mime_type!: string;
+  filename: string;
 
   @IsOptional()
-  @IsEnum(StorageType)
-  storage_type?: StorageType = StorageType.LOCAL;
+  @IsString()
+  originalName?: string;
+
+  @IsString()
+  mimetype: string;
+
+  @IsOptional()
+  @IsString()
+  storage?: 'local' | 's3' | 'r2';
 
   @IsOptional()
   @IsBoolean()
-  is_temporary?: boolean = false;
+  isTemporary?: boolean;
 }

@@ -25,14 +25,19 @@ export class MfaService {
     const verified = speakeasy.totp.verify({ secret: user.mfa_secret, encoding: 'base32', token });
     if (!verified) throw new BadRequestException('Invalid OTP token');
 
-    const backupCodes = Array.from({ length: 10 }, () => Math.random().toString(36).substring(2, 10).toUpperCase());
+    const backupCodes = Array.from({ length: 10 }, () =>
+      Math.random().toString(36).substring(2, 10).toUpperCase(),
+    );
     await this.prisma.user.update({ where: { id: userId }, data: { is_mfa_enabled: true } });
     this.logger.log(`MFA enabled for user: ${userId}`);
     return backupCodes;
   }
 
   async disableMfa(userId: string) {
-    await this.prisma.user.update({ where: { id: userId }, data: { is_mfa_enabled: false, mfa_secret: null } });
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { is_mfa_enabled: false, mfa_secret: null },
+    });
     this.logger.log(`MFA disabled for user: ${userId}`);
   }
 

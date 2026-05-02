@@ -72,7 +72,13 @@ export class CampaignsRepository {
     });
   }
 
-  async createStatusHistory(campaignId: string, fromStatus: CampaignStatus | null, toStatus: CampaignStatus, changedBy: string, note?: string) {
+  async createStatusHistory(
+    campaignId: string,
+    fromStatus: CampaignStatus | null,
+    toStatus: CampaignStatus,
+    changedBy: string,
+    note?: string,
+  ) {
     return this.prisma.campaignStatusHistory.create({
       data: {
         campaign_id: campaignId,

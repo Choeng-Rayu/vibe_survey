@@ -11,9 +11,7 @@ export class AnalyticsRepository {
       where: {
         campaign_id: campaignId,
         deleted_at: null,
-        ...(startDate || endDate
-          ? { created_at: { gte: startDate, lte: endDate } }
-          : {}),
+        ...(startDate || endDate ? { created_at: { gte: startDate, lte: endDate } } : {}),
       },
       select: {
         id: true,
@@ -68,7 +66,13 @@ export class AnalyticsRepository {
         user: {
           select: {
             profile: {
-              select: { gender: true, country: true, city: true, education_level: true, income_range: true },
+              select: {
+                gender: true,
+                country: true,
+                city: true,
+                education_level: true,
+                income_range: true,
+              },
             },
           },
         },

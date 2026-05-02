@@ -21,7 +21,7 @@ export class SurveyValidationService {
         if (!q.id) errors.push(`Question ${idx + 1}: Missing id`);
         if (!q.type) errors.push(`Question ${idx + 1}: Missing type`);
         if (!q.text) errors.push(`Question ${idx + 1}: Missing text`);
-        
+
         if (['single_choice', 'multiple_choice'].includes(q.type)) {
           if (!q.options || !Array.isArray(q.options) || q.options.length < 2) {
             errors.push(`Question ${idx + 1}: Choice questions need at least 2 options`);

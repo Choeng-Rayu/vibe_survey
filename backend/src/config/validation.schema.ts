@@ -15,7 +15,9 @@ export const validationSchema = Joi.object({
   JWT_REFRESH_EXPIRATION: Joi.string().default('7d'),
 
   ENCRYPTION_KEY: Joi.string().optional(),
-  CORS_ORIGINS: Joi.string().default('http://localhost:3001,http://localhost:3002,http://localhost:3003'),
+  CORS_ORIGINS: Joi.string().default(
+    'http://localhost:3001,http://localhost:3002,http://localhost:3003',
+  ),
   LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug', 'verbose').default('debug'),
 
   REDIS_URL: Joi.string().default('redis://localhost:6379'),

@@ -39,8 +39,6 @@ export class HealthController {
   @Get('readiness')
   @HealthCheck()
   readiness() {
-    return this.health.check([
-      () => this.prismaHealth.pingCheck('database', this.prisma),
-    ]);
+    return this.health.check([() => this.prismaHealth.pingCheck('database', this.prisma)]);
   }
 }

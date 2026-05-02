@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { CampaignsRepository } from './campaigns.repository';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
@@ -36,7 +42,10 @@ export class CampaignsService {
     });
   }
 
-  async findAll(userId: string, params?: { skip?: number; take?: number; search?: string; status?: CampaignStatus }) {
+  async findAll(
+    userId: string,
+    params?: { skip?: number; take?: number; search?: string; status?: CampaignStatus },
+  ) {
     const where: any = { user_id: userId, deleted_at: null };
     if (params?.search) {
       where.OR = [

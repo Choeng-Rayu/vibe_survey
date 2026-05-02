@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Query } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { MfaService } from './mfa.service';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
 import { MfaVerifyDto, MfaEnableDto } from './dto/mfa.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 
@@ -57,5 +59,31 @@ export class AuthController {
   async disableMfa(@CurrentUser('userId') userId: string) {
     await this.mfaService.disableMfa(userId);
     return { message: 'MFA disabled' };
+  }
+
+  // Google OAuth endpoints
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin() {
+    // Initiates Google OAuth flow; Passport handles redirect
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: Request) {
+    const user = req.user as any;
+    const tokens = await this.authService.issueTokens(user.id, user.email, user.role);
+    return { user: { id: user.id, email: user.email, role: user.role }, ...tokens };
+  }
+
+  // Telegram OAuth endpoint (via Telegram Login widget)
+  @Public()
+  @Get('telegram')
+  async telegramLogin(@Query() query: Record<string, string>) {
+    const user = await this.authService.validateTelegramLogin(query);
+    const tokens = await this.authService.issueTokens(user.id, user.email, user.role);
+    return { user: { id: user.id, email: user.email, role: user.role }, ...tokens };
   }
 }

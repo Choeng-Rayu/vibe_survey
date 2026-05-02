@@ -58,14 +58,20 @@ export class WebhookDeliveryService {
 
       if (!response.ok && attempt < this.maxRetries) {
         const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-        setTimeout(() => this.attemptDelivery(deliveryId, url, secret, payload, attempt + 1), delay);
+        setTimeout(
+          () => this.attemptDelivery(deliveryId, url, secret, payload, attempt + 1),
+          delay,
+        );
       }
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Webhook delivery failed: ${err.message}`);
       if (attempt < this.maxRetries) {
         const delay = Math.pow(2, attempt) * 1000;
-        setTimeout(() => this.attemptDelivery(deliveryId, url, secret, payload, attempt + 1), delay);
+        setTimeout(
+          () => this.attemptDelivery(deliveryId, url, secret, payload, attempt + 1),
+          delay,
+        );
       }
     }
   }

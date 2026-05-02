@@ -95,7 +95,7 @@ export class CampaignsController {
 
   @Get(':id/status')
   getStatus(@Request() req: any, @Param('id') id: string) {
-    return this.campaignsService.findOne(id, req.user.sub).then(c => ({ status: c.status }));
+    return this.campaignsService.findOne(id, req.user.sub).then((c) => ({ status: c.status }));
   }
 
   @Get(':id/history')
@@ -106,37 +106,45 @@ export class CampaignsController {
   // Requirement 8.6: Budget Management
   @Get(':id/budget')
   getBudget(@Request() req: any, @Param('id') id: string) {
-    return this.campaignsService.findOne(id, req.user.sub)
+    return this.campaignsService
+      .findOne(id, req.user.sub)
       .then(() => this.budgetService.getBudget(id));
   }
 
   @Put(':id/budget')
   updateBudget(@Request() req: any, @Param('id') id: string, @Body() dto: UpdateBudgetDto) {
-    return this.campaignsService.findOne(id, req.user.sub)
-      .then(() => this.budgetService.updateBudget(id, dto.budget_total, dto.cpr, dto.max_responses));
+    return this.campaignsService
+      .findOne(id, req.user.sub)
+      .then(() =>
+        this.budgetService.updateBudget(id, dto.budget_total, dto.cpr, dto.max_responses),
+      );
   }
 
   @Post(':id/budget/topup')
   topUpBudget(@Request() req: any, @Param('id') id: string, @Body() dto: TopUpBudgetDto) {
-    return this.campaignsService.findOne(id, req.user.sub)
+    return this.campaignsService
+      .findOne(id, req.user.sub)
       .then(() => this.budgetService.topUpBudget(id, dto.amount));
   }
 
   @Get(':id/budget/alerts')
   getBudgetAlerts(@Request() req: any, @Param('id') id: string) {
-    return this.campaignsService.findOne(id, req.user.sub)
+    return this.campaignsService
+      .findOne(id, req.user.sub)
       .then(() => this.budgetService.getBudgetAlerts(id));
   }
 
   @Get(':id/budget/forecast')
   forecastBudget(@Request() req: any, @Param('id') id: string) {
-    return this.campaignsService.findOne(id, req.user.sub)
+    return this.campaignsService
+      .findOne(id, req.user.sub)
       .then(() => this.budgetService.forecastBudget(id));
   }
 
   @Post(':id/budget/reconcile')
   reconcileBudget(@Request() req: any, @Param('id') id: string) {
-    return this.campaignsService.findOne(id, req.user.sub)
+    return this.campaignsService
+      .findOne(id, req.user.sub)
       .then(() => this.budgetService.reconcileBudget(id));
   }
 }

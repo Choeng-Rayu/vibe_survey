@@ -1,65 +1,96 @@
-// Req 15.2: Server-Sent Events for one-way real-time updates
-import { Controller, Sse, Query, Request } from '@nestjs/common';
-import { Observable, interval, map } from 'rxjs';
-import { Logger } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards, Param } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 
-interface SseEvent {
-  data: any;
-  id?: string;
-  type?: string;
-  retry?: number;
-}
-
+// Req 15: Real-Time Communication - SSE for one-way updates
 @Controller('sse')
+@UseGuards(JwtAuthGuard)
 export class SseController {
-  private readonly logger = new Logger(SseController.name);
+  private connections = new Map<string, Response>();
 
-  // GET /api/v1/sse/notifications - Req 15.5
-  @Sse('notifications')
-  streamNotifications(@Request() req: any): Observable<SseEvent> {
-    const userId = req.user?.id;
-    this.logger.log(`SSE notifications stream opened for user ${userId}`);
-    
-    // Req 15.10: Connection heartbeat
-    return interval(30000).pipe(
-      map(() => ({
-        data: { type: 'heartbeat', timestamp: new Date() },
-        id: Date.now().toString(),
-      })),
-    );
+  @Get('notifications')
+  async streamNotifications(@CurrentUser() user: any, @Res() res: Response): Promise<void> {
+    const userId = user.id;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    this.connections.set(`notifications-${userId}`, res);
+
+    // Heartbeat every 30s
+    const heartbeat = setInterval(() => {
+      res.write(': heartbeat\n\n');
+    }, 30000);
+
+    res.on('close', () => {
+      clearInterval(heartbeat);
+      this.connections.delete(`notifications-${userId}`);
+    });
   }
 
-  // GET /api/v1/sse/analytics/:campaignId - Req 15.4
-  @Sse('analytics/:campaignId')
-  streamAnalytics(@Query('campaignId') campaignId: string, @Request() req: any): Observable<SseEvent> {
-    this.logger.log(`SSE analytics stream opened for campaign ${campaignId}`);
-    
-    return interval(5000).pipe(
-      map(() => ({
-        data: {
-          campaignId,
-          metrics: { responses: 0, completion_rate: 0 },
-          timestamp: new Date(),
-        },
-        type: 'analytics_update',
-      })),
-    );
+  @Get('analytics/:campaignId')
+  async streamAnalytics(
+    @Param('campaignId') campaignId: string,
+    @CurrentUser() user: any,
+    @Res() res: Response,
+  ): Promise<void> {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const key = `analytics-${campaignId}-${user.id}`;
+    this.connections.set(key, res);
+
+    const heartbeat = setInterval(() => {
+      res.write(': heartbeat\n\n');
+    }, 30000);
+
+    res.on('close', () => {
+      clearInterval(heartbeat);
+      this.connections.delete(key);
+    });
   }
 
-  // GET /api/v1/sse/system/status - Req 15.8
-  @Sse('system/status')
-  streamSystemStatus(): Observable<SseEvent> {
-    this.logger.log('SSE system status stream opened');
-    
-    return interval(10000).pipe(
-      map(() => ({
-        data: {
-          status: 'healthy',
-          uptime: process.uptime(),
-          timestamp: new Date(),
-        },
-        type: 'system_status',
-      })),
-    );
+  @Get('system/status')
+  async streamSystemStatus(@Res() res: Response): Promise<void> {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const key = `system-status-${Date.now()}`;
+    this.connections.set(key, res);
+
+    const heartbeat = setInterval(() => {
+      res.write(': heartbeat\n\n');
+    }, 30000);
+
+    res.on('close', () => {
+      clearInterval(heartbeat);
+      this.connections.delete(key);
+    });
+  }
+
+  // Send event to specific connection
+  sendEvent(key: string, event: string, data: any): void {
+    const connection = this.connections.get(key);
+    if (connection) {
+      connection.write(`event: ${event}\n`);
+      connection.write(`data: ${JSON.stringify(data)}\n\n`);
+    }
+  }
+
+  // Broadcast to all connections matching pattern
+  broadcast(pattern: string, event: string, data: any): void {
+    for (const [key, connection] of this.connections.entries()) {
+      if (key.startsWith(pattern)) {
+        connection.write(`event: ${event}\n`);
+        connection.write(`data: ${JSON.stringify(data)}\n\n`);
+      }
+    }
   }
 }

@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { SurveyFeedQueryDto, SurveyFeedResponseDto, SurveyFeedItemDto } from './dto/survey-feed.dto';
+import {
+  SurveyFeedQueryDto,
+  SurveyFeedResponseDto,
+  SurveyFeedItemDto,
+} from './dto/survey-feed.dto';
 
 // Requirement 10.1: Survey feed generation with personalized recommendations
 // Requirement 10.2: Screener question evaluation and qualification
@@ -11,10 +15,13 @@ export class SurveyFeedService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Get personalized survey feed with match scoring
-  async getPersonalizedFeed(userId: string, query: SurveyFeedQueryDto): Promise<SurveyFeedResponseDto> {
+  async getPersonalizedFeed(
+    userId: string,
+    query: SurveyFeedQueryDto,
+  ): Promise<SurveyFeedResponseDto> {
     const limit = query.limit || 20;
     const profile = await this.prisma.profile.findUnique({ where: { user_id: userId } });
-    
+
     if (!profile) {
       return this.getGenericFeed(query);
     }
@@ -23,27 +30,32 @@ export class SurveyFeedService {
       where: {
         status: 'active',
         deleted_at: null,
-        OR: [
-          { ends_at: null },
-          { ends_at: { gte: new Date() } }
-        ]
+        OR: [{ ends_at: null }, { ends_at: { gte: new Date() } }],
       },
       include: {
-        survey: { select: { id: true, title: true, description: true, estimated_time: true, question_count: true } },
-        responses: { where: { user_id: userId }, select: { id: true } }
+        survey: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            estimated_time: true,
+            question_count: true,
+          },
+        },
+        responses: { where: { user_id: userId }, select: { id: true } },
       },
       take: limit + 1,
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
     });
 
-    const eligibleCampaigns = campaigns.filter(c => {
+    const eligibleCampaigns = campaigns.filter((c) => {
       if (c.responses.length > 0) return false;
       if (c.max_responses && c.response_count >= c.max_responses) return false;
       const remaining = Number(c.budget_total) - Number(c.budget_spent);
       return remaining >= Number(c.cpr);
     });
 
-    const scoredSurveys = eligibleCampaigns.map(campaign => {
+    const scoredSurveys = eligibleCampaigns.map((campaign) => {
       const matchScore = this.calculateMatchScore(campaign.targeting, profile);
       return {
         id: campaign.survey.id,
@@ -54,7 +66,7 @@ export class SurveyFeedService {
         match_score: matchScore,
         category: 'general',
         question_count: campaign.survey.question_count,
-        campaign_id: campaign.id
+        campaign_id: campaign.id,
       };
     });
 
@@ -71,7 +83,7 @@ export class SurveyFeedService {
     return {
       surveys,
       next_cursor: nextCursor,
-      total_available: eligibleCampaigns.length
+      total_available: eligibleCampaigns.length,
     };
   }
 
@@ -82,19 +94,24 @@ export class SurveyFeedService {
       where: {
         status: 'active',
         deleted_at: null,
-        OR: [
-          { ends_at: null },
-          { ends_at: { gte: new Date() } }
-        ]
+        OR: [{ ends_at: null }, { ends_at: { gte: new Date() } }],
       },
       include: {
-        survey: { select: { id: true, title: true, description: true, estimated_time: true, question_count: true } }
+        survey: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            estimated_time: true,
+            question_count: true,
+          },
+        },
       },
       take: limit + 1,
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
     });
 
-    const surveys = campaigns.slice(0, limit).map(c => ({
+    const surveys = campaigns.slice(0, limit).map((c) => ({
       id: c.survey.id,
       title: c.survey.title,
       description: c.survey.description || '',
@@ -103,13 +120,13 @@ export class SurveyFeedService {
       match_score: 50,
       category: 'general',
       question_count: c.survey.question_count,
-      campaign_id: c.id
+      campaign_id: c.id,
     }));
 
     return {
       surveys,
       next_cursor: campaigns.length > limit ? surveys[surveys.length - 1].id : undefined,
-      total_available: campaigns.length
+      total_available: campaigns.length,
     };
   }
 
@@ -150,7 +167,10 @@ export class SurveyFeedService {
       total++;
       if (profile.date_of_birth) {
         const age = new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear();
-        if ((!targetDemo.age_min || age >= targetDemo.age_min) && (!targetDemo.age_max || age <= targetDemo.age_max)) {
+        if (
+          (!targetDemo.age_min || age >= targetDemo.age_min) &&
+          (!targetDemo.age_max || age <= targetDemo.age_max)
+        ) {
           matches++;
         }
       }
@@ -192,15 +212,18 @@ export class SurveyFeedService {
 
   private matchInterests(targetInterests: string[], profileInterests: string[]): number {
     if (!targetInterests.length || !profileInterests.length) return 50;
-    const matches = targetInterests.filter(i => profileInterests.includes(i)).length;
+    const matches = targetInterests.filter((i) => profileInterests.includes(i)).length;
     return (matches / targetInterests.length) * 100;
   }
 
   // Check if user is eligible for survey
-  async checkEligibility(userId: string, campaignId: string): Promise<{ eligible: boolean; reason?: string }> {
+  async checkEligibility(
+    userId: string,
+    campaignId: string,
+  ): Promise<{ eligible: boolean; reason?: string }> {
     const campaign = await this.prisma.campaign.findUnique({
       where: { id: campaignId },
-      include: { responses: { where: { user_id: userId }, select: { id: true } } }
+      include: { responses: { where: { user_id: userId }, select: { id: true } } },
     });
 
     if (!campaign) {
@@ -228,9 +251,12 @@ export class SurveyFeedService {
   }
 
   // Evaluate screener questions
-  async evaluateScreener(surveyId: string, answers: Record<string, any>): Promise<{ qualified: boolean; reason?: string }> {
+  async evaluateScreener(
+    surveyId: string,
+    answers: Record<string, any>,
+  ): Promise<{ qualified: boolean; reason?: string }> {
     const survey = await this.prisma.survey.findUnique({ where: { id: surveyId } });
-    
+
     if (!survey) {
       return { qualified: false, reason: 'Survey not found' };
     }

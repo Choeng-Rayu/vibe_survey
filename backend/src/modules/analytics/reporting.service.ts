@@ -18,7 +18,11 @@ export class ReportingService {
 
     let data: any;
     if (config.type === ReportType.CAMPAIGN_PERFORMANCE && config.campaign_ids) {
-      data = await this.repository.getMultipleCampaignMetrics(config.campaign_ids, startDate, endDate);
+      data = await this.repository.getMultipleCampaignMetrics(
+        config.campaign_ids,
+        startDate,
+        endDate,
+      );
     } else if (config.type === ReportType.DEMOGRAPHIC_BREAKDOWN && config.campaign_ids?.[0]) {
       data = await this.repository.getDemographicBreakdown(config.campaign_ids[0]);
     } else if (config.type === ReportType.RESPONSE_QUALITY && config.campaign_ids?.[0]) {
