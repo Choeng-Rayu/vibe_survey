@@ -50,6 +50,12 @@ export class TestHelper {
         create: jest.fn(),
         update: jest.fn(),
       },
+      apiKey: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+      },
       $transaction: jest.fn((fn) => fn),
     };
   }

@@ -12,10 +12,10 @@ export class InAppChannel {
     const notification = await this.prisma.notification.create({
       data: {
         user_id: userId,
-        type: payload.type,
+        channel: 'in_app',
         title: payload.title,
         body: payload.body,
-        data: payload.data || {},
+        data: { ...(payload.data || {}), type: payload.type },
         read_at: null,
       },
     });

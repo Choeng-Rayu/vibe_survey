@@ -37,7 +37,7 @@ export class SecurityMiddleware implements NestMiddleware {
     if (obj && typeof obj === 'object') {
       const sanitized: any = {};
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           sanitized[key] = this.sanitize(obj[key]);
         }
       }

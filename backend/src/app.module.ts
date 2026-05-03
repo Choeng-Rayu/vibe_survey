@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -19,12 +19,20 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { FilesModule } from './modules/files/files.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { IntegrationModule } from './modules/integration/integration.module';
 import { HealthModule } from './health/health.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { TracingModule } from './common/tracing/tracing.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { CustomThrottlerGuard } from './common/guards/throttle.guard';
 import { RedisThrottlerStorage } from './common/guards/redis-throttler.storage';
+import { FeatureToggleGuard } from './common/guards/feature-toggle.guard';
+import { HttpExceptionFilter, AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { AuditService } from './common/audit/audit.service';
+import { AuditInterceptor } from './common/audit/audit.interceptor';
+import { FeatureToggleService } from './common/feature-toggles/feature-toggle.service';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 
@@ -50,12 +58,21 @@ import { validationSchema } from './config/validation.schema';
     FilesModule,
     JobsModule,
     WebhooksModule,
+    IntegrationModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     RedisThrottlerStorage,
+    AuditService,
+    FeatureToggleService,
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: FeatureToggleGuard },
     { provide: APP_GUARD, useClass: CustomThrottlerGuard },
   ],
 })

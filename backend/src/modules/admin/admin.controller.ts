@@ -1,9 +1,11 @@
 // Req 14: Admin Management endpoints
-import { Controller, Get, Post, Delete, Param, Query, Body, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, Request } from '@nestjs/common';
 import { AdminService } from './admin.service.js';
 import { ApprovalWorkflowService } from './approval-workflow.service.js';
 import { ModerationService } from './moderation.service.js';
 import { UserManagementService } from './user-management.service.js';
+import { AuditService } from '../../common/audit/audit.service.js';
+import { FeatureToggleService } from '../../common/feature-toggles/feature-toggle.service.js';
 import { CampaignReviewDto, BulkReviewDto, ReviewAction } from './dto/campaign-review.dto.js';
 import { ModerationActionDto, FlagContentDto } from './dto/moderation-action.dto.js';
 import { BulkUserActionDto, UserExportDto } from './dto/user-moderation.dto.js';
@@ -15,6 +17,8 @@ export class AdminController {
     private readonly approvalWorkflow: ApprovalWorkflowService,
     private readonly moderation: ModerationService,
     private readonly userManagement: UserManagementService,
+    private readonly auditService: AuditService,
+    private readonly featureToggleService: FeatureToggleService,
   ) {}
 
   // ── Campaign Review ──────────────────────────────────────────────────────────
@@ -159,5 +163,58 @@ export class AdminController {
       entity_type,
       action,
     });
+  }
+
+  @Get('audit-logs/search')
+  searchAuditLogs(
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('entity_type') entity_type?: string,
+    @Query('entity_id') entity_id?: string,
+    @Query('action') action?: string,
+    @Query('user_id') user_id?: string,
+  ) {
+    return this.auditService.search({
+      skip: Number(skip ?? 0),
+      take: Number(take ?? 50),
+      entity_type,
+      entity_id,
+      action,
+      user_id,
+    });
+  }
+
+  @Get('audit-logs/export')
+  exportAuditLogs(@Query('entity_type') entity_type?: string, @Query('action') action?: string) {
+    return this.auditService.export({ entity_type, action });
+  }
+
+  @Get('config/platform')
+  getPlatformConfig() {
+    return {
+      api_version: '1.0',
+      default_locale: 'en',
+      supported_locales: ['en', 'km'],
+      payouts: { providers: ['aba_pay', 'wing', 'true_money', 'bakong'] },
+    };
+  }
+
+  @Put('config/platform')
+  updatePlatformConfig(@Body() body: Record<string, unknown>) {
+    return { updated: true, config: body };
+  }
+
+  @Get('config/features')
+  getFeatureFlags() {
+    return this.featureToggleService.list();
+  }
+
+  @Put('config/features/:feature')
+  updateFeatureFlag(
+    @Param('feature') feature: string,
+    @Request() req: any,
+    @Body() dto: { is_enabled: boolean; description?: string; rollout_pct?: number },
+  ) {
+    return this.featureToggleService.upsert(feature, dto, req.user?.id);
   }
 }

@@ -4,7 +4,7 @@ import { ApiKeyService } from './api-key.service';
 import { CreateApiKeyDto, ApiKeyResponseDto, ApiKeyWithSecretDto } from './dto/api-key.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
-@Controller('api/v1/integration/api-keys')
+@Controller('integration/api-keys')
 @UseGuards(JwtAuthGuard)
 export class ApiKeyController {
   constructor(private readonly apiKeyService: ApiKeyService) {}
@@ -24,7 +24,7 @@ export class ApiKeyController {
   // Requirement 19.8: Revoke API key
   @Delete(':id')
   async revoke(@Request() req: any, @Param('id') id: string): Promise<{ message: string }> {
-    await this.apiKeyService.revoke(req.user.id, id);
+    await this.apiKeyService.revoke(id, req.user.id);
     return { message: 'API key revoked successfully' };
   }
 

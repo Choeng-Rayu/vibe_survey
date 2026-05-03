@@ -2,14 +2,14 @@ import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class FileUploadDto {
   @IsString()
-  filename: string;
+  filename!: string;
 
   @IsOptional()
   @IsString()
   originalName?: string;
 
   @IsString()
-  mimetype: string;
+  mimetype!: string;
 
   @IsOptional()
   @IsString()

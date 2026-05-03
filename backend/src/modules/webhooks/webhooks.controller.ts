@@ -14,7 +14,7 @@ import { WebhooksService } from './webhooks.service.js';
 import { WebhookDeliveryService } from './webhook-delivery.service.js';
 import { CreateWebhookDto, UpdateWebhookDto } from './dto/webhook.dto.js';
 
-@Controller('api/v1/webhooks')
+@Controller('webhooks')
 export class WebhooksController {
   constructor(
     private readonly webhooksService: WebhooksService,

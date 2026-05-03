@@ -27,7 +27,7 @@ export class ApiKeyGuard implements CanActivate {
 
     // Attach user info to request
     request.user = {
-      id: validation.userId,
+      id: validation.id,
       scopes: validation.scopes,
       authType: 'api_key',
     };

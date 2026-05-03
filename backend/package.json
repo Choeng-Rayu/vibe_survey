@@ -22,6 +22,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:ci": "jest --coverage --ci --maxWorkers=2"
   },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
   "dependencies": {
     "@nestjs/bull": "^11.0.4",
     "@nestjs/common": "^11.0.1",
@@ -32,6 +35,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.19",
     "@nestjs/platform-socket.io": "^11.1.19",
+    "@nestjs/swagger": "^11.4.2",
     "@nestjs/terminus": "^11.1.1",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.19",
@@ -44,6 +48,7 @@
     "bull": "^4.16.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "fast-check": "^4.7.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.10.1",
     "joi": "^18.1.2",
@@ -58,6 +63,7 @@
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.3",
     "speakeasy": "^2.0.0",
+    "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5",
     "zod": "^4.4.1"
   },

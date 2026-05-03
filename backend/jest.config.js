@@ -1,20 +1,20 @@
 // Req 25: Jest configuration for unit testing with >90% coverage
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src',
-  testRegex: '.*\\.spec\\.ts$',
+  rootDir: '.',
+  testRegex: '.*(\\.spec|-spec)\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
   collectCoverageFrom: [
-    '**/*.(t|j)s',
-    '!**/*.module.ts',
+    'src/**/*.(t|j)s',
+    '!src/**/*.module.ts',
     '!**/*.interface.ts',
     '!**/*.dto.ts',
     '!**/main.ts',
     '!**/index.ts',
   ],
-  coverageDirectory: '../coverage',
+  coverageDirectory: 'coverage',
   testEnvironment: 'node',
   coverageThreshold: {
     global: {
@@ -25,10 +25,11 @@ module.exports = {
     },
   },
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/$1',
+    '^src/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  setupFilesAfterEnv: ['<rootDir>/../test/setup.ts'],
+  setupFiles: ['<rootDir>/test/setup-env.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   globals: {
     'ts-jest': {
       tsconfig: {
@@ -37,4 +38,3 @@ module.exports = {
     },
   },
 };
-

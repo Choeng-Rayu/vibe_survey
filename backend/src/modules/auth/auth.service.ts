@@ -40,6 +40,8 @@ export class AuthService {
         data: {
           email,
           role: Role.survey_taker,
+          is_email_verified: true,
+          is_phone_verified: true,
         },
       });
       // Create a profile record (optional name extraction)

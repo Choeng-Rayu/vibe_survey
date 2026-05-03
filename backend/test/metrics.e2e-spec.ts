@@ -1,15 +1,17 @@
 // Req 25.2: E2E tests for metrics endpoint
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import request, { Response } from 'supertest';
+import { MetricsController } from '../src/monitoring/metrics.controller';
+import { MetricsService } from '../src/monitoring/metrics.service';
 
 describe('Metrics Endpoint (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [MetricsController],
+      providers: [MetricsService],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -26,7 +28,7 @@ describe('Metrics Endpoint (e2e)', () => {
         .get('/metrics')
         .expect(200)
         .expect('Content-Type', /text\/plain/)
-        .expect((res) => {
+        .expect((res: Response) => {
           expect(res.text).toContain('# HELP');
           expect(res.text).toContain('# TYPE');
         });
@@ -36,7 +38,7 @@ describe('Metrics Endpoint (e2e)', () => {
       return request(app.getHttpServer())
         .get('/metrics')
         .expect(200)
-        .expect((res) => {
+        .expect((res: Response) => {
           expect(res.text).toContain('http_requests_total');
           expect(res.text).toContain('http_request_duration_seconds');
         });

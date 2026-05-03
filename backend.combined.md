@@ -5,6 +5,7 @@
 ## Task 1 ✅ — Initialize NestJS Project and Configure TypeScript
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Initialize NestJS project in `backend/` directory
   - ✅ Configure `tsconfig.json` with strict mode and ESM (`"module": "NodeNext"`)
@@ -16,6 +17,7 @@
 - **Requirements**: Requirement 1
 
 ### 2. From requirements.md
+
 - **Requirement 1.1**: THE NestJS_Backend SHALL implement a modular architecture with domain-specific modules (Auth, Users, Surveys, Campaigns, Analytics, Payments, Admin)
 - **Requirement 1.2**: THE NestJS_Backend SHALL use dependency injection for all service dependencies
 - **Requirement 1.3**: THE NestJS_Backend SHALL implement proper separation of concerns with Controller_Layer, Service_Layer, and Repository_Layer
@@ -28,6 +30,7 @@
 - **Requirement 1.10**: THE NestJS_Backend SHALL support graceful shutdown and health checks
 
 ### 3. From design.md
+
 - **Pattern**: Modular Domain-Driven Design with layered architecture (Controller → Service → Repository → Database)
 - **Files**:
   - `backend/package.json`
@@ -38,6 +41,7 @@
   - `backend/.gitignore`
   - `backend/.env.example`
 - **Interface**:
+
 ```
 backend/src/
 ├── app.module.ts        # Root module (Req 1.1)
@@ -55,23 +59,49 @@ backend/src/
 ```
 
 ### 4. Implementation
+
 ```jsonc
 // tsconfig.json — Req 1.4
-{ "compilerOptions": { "strict": true, "module": "NodeNext", "moduleResolution": "NodeNext", "target": "ES2022", "experimentalDecorators": true, "emitDecoratorMetadata": true } }
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+  },
+}
 ```
+
 ```typescript
 // main.ts — Req 1.8, 1.10
 const app = await NestFactory.create(AppModule);
 app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true })); // Req 1.8
 app.enableShutdownHooks(); // Req 1.10
 ```
+
 ```typescript
 // app.module.ts — Req 1.1, 1.2
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, AuthModule, UsersModule, SurveysModule, CampaignsModule, AnalyticsModule, PaymentsModule, AdminModule, CommonModule] })
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    AuthModule,
+    UsersModule,
+    SurveysModule,
+    CampaignsModule,
+    AnalyticsModule,
+    PaymentsModule,
+    AdminModule,
+    CommonModule,
+  ],
+})
 export class AppModule {}
 ```
 
 ### 5. Verification
+
 - [x] Req 1.1 — domain modules declared in `app.module.ts`
 - [x] Req 1.2 — all services use `@Injectable()` + constructor DI
 - [x] Req 1.3 — `*.controller.ts` / `*.service.ts` / `*.repository.ts` per module
@@ -89,6 +119,7 @@ export class AppModule {}
 ## Task 2 ✅ — Set Up Prisma ORM and Database Schema
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install Prisma CLI and client dependencies
   - ✅ Initialize Prisma with PostgreSQL provider
@@ -101,6 +132,7 @@ export class AppModule {}
 - **Requirements**: Requirement 2
 
 ### 2. From requirements.md
+
 - **Requirement 2.1**: THE NestJS_Backend SHALL implement a PostgreSQL database schema supporting all platform entities
 - **Requirement 2.2**: THE NestJS_Backend SHALL define Prisma models for User, Advertiser, Survey, Campaign, Response, Transaction, and administrative entities
 - **Requirement 2.3**: THE NestJS_Backend SHALL implement proper foreign key relationships with cascade rules
@@ -113,10 +145,12 @@ export class AppModule {}
 - **Requirement 2.10**: THE NestJS_Backend SHALL support JSONB fields for flexible schema requirements
 
 ### 3. From design.md
+
 - **Pattern**: Prisma schema-first approach with type-safe queries; soft delete pattern via `deleted_at`
 - **Files**:
   - `backend/prisma/schema.prisma`
 - **Interface**:
+
 ```prisma
 model User { id String @id @default(cuid()); email String @unique; deleted_at DateTime? }
 model Survey { id String @id; definition Json; deleted_at DateTime? }
@@ -125,6 +159,7 @@ model Transaction { id String @id; amount Decimal; currency String }
 ```
 
 ### 4. Implementation
+
 ```prisma
 // prisma/schema.prisma
 datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
@@ -159,6 +194,7 @@ model Survey {
 ```
 
 ### 5. Verification
+
 - [x] Req 2.1 — PostgreSQL provider in `datasource`
 - [x] Req 2.2 — User, Survey, Campaign, Response, Transaction, Wallet models defined
 - [x] Req 2.3 — `@relation` with cascade rules on FK fields
@@ -176,6 +212,7 @@ model Survey {
 ## Task 3 ✅ — Implement Configuration Module with Environment Validation
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `config/` module with ConfigModule setup
   - ✅ Implement `configuration.ts` with configuration factory
@@ -186,9 +223,11 @@ model Survey {
 - **Requirements**: Requirement 1
 
 ### 2. From requirements.md
+
 - **Requirement 1.5**: THE NestJS_Backend SHALL implement configuration management using environment variables and validation
 
 ### 3. From design.md
+
 - **Pattern**: NestJS `ConfigModule` with Joi schema validation; fail-fast on missing required vars
 - **Files**:
   - `backend/src/config/config.module.ts`
@@ -199,39 +238,69 @@ model Survey {
   - `backend/src/config/env/jwt.config.ts`
   - `backend/src/config/env/app.config.ts`
 - **Interface**:
+
 ```typescript
-interface AppConfig { port: number; nodeEnv: string; corsOrigins: string[] }
-interface JwtConfig { secret: string; expiresIn: string; refreshSecret: string; refreshExpiresIn: string }
-interface DatabaseConfig { url: string; poolSize: number }
-interface RedisConfig { host: string; port: number }
+interface AppConfig {
+  port: number;
+  nodeEnv: string;
+  corsOrigins: string[];
+}
+interface JwtConfig {
+  secret: string;
+  expiresIn: string;
+  refreshSecret: string;
+  refreshExpiresIn: string;
+}
+interface DatabaseConfig {
+  url: string;
+  poolSize: number;
+}
+interface RedisConfig {
+  host: string;
+  port: number;
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // config/validation.schema.ts — Req 1.5
 export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid("development", "production", "test")
+    .default("development"),
   PORT: Joi.number().default(3000),
   DATABASE_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().min(32).required(),
-  JWT_EXPIRES_IN: Joi.string().default('15m'),
+  JWT_EXPIRES_IN: Joi.string().default("15m"),
   JWT_REFRESH_SECRET: Joi.string().min(32).required(),
-  JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
-  REDIS_HOST: Joi.string().default('localhost'),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default("7d"),
+  REDIS_HOST: Joi.string().default("localhost"),
   REDIS_PORT: Joi.number().default(6379),
 });
 ```
+
 ```typescript
 // config/configuration.ts
 export default () => ({
-  app: { port: parseInt(process.env.PORT ?? '3000'), nodeEnv: process.env.NODE_ENV },
-  jwt: { secret: process.env.JWT_SECRET, expiresIn: process.env.JWT_EXPIRES_IN },
+  app: {
+    port: parseInt(process.env.PORT ?? "3000"),
+    nodeEnv: process.env.NODE_ENV,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  },
   database: { url: process.env.DATABASE_URL },
-  redis: { host: process.env.REDIS_HOST, port: parseInt(process.env.REDIS_PORT ?? '6379') },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT ?? "6379"),
+  },
 });
 ```
 
 ### 5. Verification
+
 - [x] Req 1.5 — `ConfigModule.forRoot({ validationSchema })` rejects missing `DATABASE_URL` or short `JWT_SECRET`
 - [x] Application fails to start with missing required env vars
 - [x] Typed config interfaces available via `ConfigService.get<JwtConfig>('jwt')`
@@ -241,6 +310,7 @@ export default () => ({
 ## Task 4 ✅ — Create Database Module with Prisma Service
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `database/` module
   - ✅ Implement `PrismaService` extending `PrismaClient`
@@ -251,44 +321,64 @@ export default () => ({
 - **Requirements**: Requirement 2
 
 ### 2. From requirements.md
+
 - **Requirement 2.7**: THE NestJS_Backend SHALL implement database connection pooling for performance
 - **Requirement 2.8**: THE NestJS_Backend SHALL use database transactions for multi-table operations
 
 ### 3. From design.md
+
 - **Pattern**: `PrismaService` extends `PrismaClient`; `onModuleInit` connects, `onModuleDestroy` disconnects
 - **Files**:
   - `backend/src/database/database.module.ts`
   - `backend/src/database/prisma.service.ts`
 - **Interface**:
+
 ```typescript
-class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  async onModuleInit(): Promise<void>
-  async onModuleDestroy(): Promise<void>
+class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  async onModuleInit(): Promise<void>;
+  async onModuleDestroy(): Promise<void>;
 }
 ```
 
 ### 4. Implementation
+
 ```typescript
 // database/prisma.service.ts — Req 2.7, 2.8
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor(private config: ConfigService) {
     super({
-      datasources: { db: { url: config.get('database.url') } },
-      log: config.get('app.nodeEnv') === 'development' ? ['query', 'error'] : ['error'],
+      datasources: { db: { url: config.get("database.url") } },
+      log:
+        config.get("app.nodeEnv") === "development"
+          ? ["query", "error"]
+          : ["error"],
     });
   }
-  async onModuleInit() { await this.$connect(); }           // Req 2.7
-  async onModuleDestroy() { await this.$disconnect(); }
+  async onModuleInit() {
+    await this.$connect();
+  } // Req 2.7
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
 
   // Req 2.8 — transaction helper
-  async runInTransaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  async runInTransaction<T>(
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
     return this.$transaction(fn);
   }
 }
 ```
 
 ### 5. Verification
+
 - [x] Req 2.7 — connection pooling configured via `DATABASE_URL?connection_limit=10`
 - [x] Req 2.8 — `runInTransaction()` wraps multi-table operations
 - [x] `PrismaService` connects successfully on `onModuleInit`
@@ -298,6 +388,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 ## Task 5 ✅ — Implement Common Module with Shared Components
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `common/` module
   - ✅ Implement global exception filters (`http-exception.filter.ts`, `all-exceptions.filter.ts`)
@@ -310,6 +401,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 - **Requirements**: Requirement 1, Requirement 20
 
 ### 2. From requirements.md
+
 - **Requirement 1.7**: THE NestJS_Backend SHALL implement proper error handling with custom exception filters
 - **Requirement 1.8**: THE NestJS_Backend SHALL use class-validator and class-transformer for DTO validation
 - **Requirement 20.1**: THE NestJS_Backend SHALL implement standardized error response format with error codes
@@ -317,6 +409,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 - **Requirement 20.3**: THE NestJS_Backend SHALL implement request/response logging with correlation IDs
 
 ### 3. From design.md
+
 - **Pattern**: Global filters + interceptors registered in `AppModule`; standardized `ApiResponse<T>` wrapper
 - **Files**:
   - `backend/src/common/filters/http-exception.filter.ts`
@@ -327,12 +420,26 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   - `backend/src/common/dto/pagination.dto.ts`
   - `backend/src/common/interfaces/api-response.interface.ts`
 - **Interface**:
+
 ```typescript
-interface ApiResponse<T> { success: boolean; data: T; meta?: { timestamp: string; pagination?: PaginationMeta } }
-interface ApiErrorResponse { success: false; error: { code: string; message: string; details?: unknown; timestamp: string } }
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  meta?: { timestamp: string; pagination?: PaginationMeta };
+}
+interface ApiErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+    timestamp: string;
+  };
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // filters/http-exception.filter.ts — Req 1.7, 20.1, 20.2
 @Catch(HttpException)
@@ -341,20 +448,38 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = host.switchToHttp().getResponse();
     response.status(exception.getStatus()).json({
       success: false,
-      error: { code: `HTTP_${exception.getStatus()}`, message: exception.message, timestamp: new Date().toISOString() }
+      error: {
+        code: `HTTP_${exception.getStatus()}`,
+        message: exception.message,
+        timestamp: new Date().toISOString(),
+      },
     });
   }
 }
 ```
+
 ```typescript
 // interceptors/transform.interceptor.ts — Req 20.1
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {
-    return next.handle().pipe(map(data => ({ success: true, data, meta: { timestamp: new Date().toISOString() } })));
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T>
+> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<ApiResponse<T>> {
+    return next.handle().pipe(
+      map((data) => ({
+        success: true,
+        data,
+        meta: { timestamp: new Date().toISOString() },
+      })),
+    );
   }
 }
 ```
+
 ```typescript
 // interceptors/logging.interceptor.ts — Req 20.3
 @Injectable()
@@ -364,12 +489,21 @@ export class LoggingInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest();
     req.correlationId = correlationId;
     const start = Date.now();
-    return next.handle().pipe(tap(() => Logger.log(`${req.method} ${req.url} [${correlationId}] ${Date.now() - start}ms`)));
+    return next
+      .handle()
+      .pipe(
+        tap(() =>
+          Logger.log(
+            `${req.method} ${req.url} [${correlationId}] ${Date.now() - start}ms`,
+          ),
+        ),
+      );
   }
 }
 ```
 
 ### 5. Verification
+
 - [x] Req 1.7 — `HttpExceptionFilter` returns structured error JSON
 - [x] Req 1.8 — global `ValidationPipe` rejects invalid DTOs
 - [x] Req 20.1 — all errors return `{ success: false, error: { code, message, timestamp } }`
@@ -381,6 +515,7 @@ export class LoggingInterceptor implements NestInterceptor {
 ## Task 6 ✅ — Set Up Winston Logger and Monitoring
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Implement logging interceptor with correlation ID tracking
   - ✅ Add request/response logging with timestamps
@@ -389,36 +524,49 @@ export class LoggingInterceptor implements NestInterceptor {
 - **Requirements**: Requirement 1, Requirement 20
 
 ### 2. From requirements.md
+
 - **Requirement 1.9**: THE NestJS_Backend SHALL implement comprehensive logging using Winston or similar structured logging
 - **Requirement 20.3**: THE NestJS_Backend SHALL implement request/response logging with correlation IDs
 - **Requirement 20.6**: THE NestJS_Backend SHALL support distributed tracing and performance monitoring
 
 ### 3. From design.md
+
 - **Pattern**: Winston structured JSON logging; log levels per environment; correlation IDs via interceptor
 - **Files**:
   - `backend/src/common/interceptors/logging.interceptor.ts`
   - `backend/src/database/prisma.service.ts` (query logging)
 - **Interface**:
+
 ```typescript
-interface LogEntry { level: string; message: string; correlationId: string; timestamp: string; method?: string; url?: string; duration?: number }
+interface LogEntry {
+  level: string;
+  message: string;
+  correlationId: string;
+  timestamp: string;
+  method?: string;
+  url?: string;
+  duration?: number;
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // Winston logger setup — Req 1.9
-import { createLogger, transports, format } from 'winston';
+import { createLogger, transports, format } from "winston";
 export const logger = createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
   format: format.combine(format.timestamp(), format.json()), // structured JSON
   transports: [
     new transports.Console(),
-    new transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new transports.File({ filename: 'logs/combined.log' }),
+    new transports.File({ filename: "logs/error.log", level: "error" }),
+    new transports.File({ filename: "logs/combined.log" }),
   ],
 });
 ```
 
 ### 5. Verification
+
 - [x] Req 1.9 — Winston logs structured JSON with timestamps
 - [x] Req 20.3 — correlation IDs in all log entries
 - [x] Req 20.6 — log entries include duration for performance tracking
@@ -428,6 +576,7 @@ export const logger = createLogger({
 ## Task 7 — Implement JWT Authentication Strategy
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create `auth/` module with AuthModule, AuthController, AuthService
   - Install Passport, JWT, and bcrypt dependencies
@@ -442,6 +591,7 @@ export const logger = createLogger({
 - **Requirements**: Requirement 3
 
 ### 2. From requirements.md
+
 - **Requirement 3.1**: THE NestJS_Backend SHALL implement JWT-based authentication with access and refresh tokens
 - **Requirement 3.4**: THE NestJS_Backend SHALL use bcrypt for password hashing with configurable salt rounds
 - **Requirement 3.5**: THE NestJS_Backend SHALL implement session management with token blacklisting
@@ -450,6 +600,7 @@ export const logger = createLogger({
 - **Requirement 3.10**: THE NestJS_Backend SHALL log all authentication attempts with IP tracking
 
 ### 3. From design.md
+
 - **Pattern**: Passport JWT strategy; access token (15 min) + refresh token (7 days) in httpOnly cookies; Redis blacklist
 - **Files**:
   - `backend/src/auth/auth.module.ts`
@@ -462,22 +613,41 @@ export const logger = createLogger({
   - `backend/src/auth/dto/register.dto.ts`
   - `backend/src/auth/dto/refresh-token.dto.ts`
 - **Interface**:
+
 ```typescript
-interface JwtPayload { sub: string; email: string; role: Role; iat: number; exp: number }
-interface AuthTokens { accessToken: string; refreshToken: string }
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: Role;
+  iat: number;
+  exp: number;
+}
+interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // strategies/jwt.strategy.ts — Req 3.1
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
-    super({ jwtFromRequest: ExtractJwt.fromExtractors([req => req.cookies?.access_token]), secretOrKey: config.get('jwt.secret') });
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => req.cookies?.access_token,
+      ]),
+      secretOrKey: config.get("jwt.secret"),
+    });
   }
-  async validate(payload: JwtPayload) { return { id: payload.sub, email: payload.email, role: payload.role }; }
+  async validate(payload: JwtPayload) {
+    return { id: payload.sub, email: payload.email, role: payload.role };
+  }
 }
 ```
+
 ```typescript
 // auth.service.ts — Req 3.1, 3.4, 3.5, 3.10
 async login(dto: LoginDto, ip: string, fingerprint: string): Promise<AuthTokens> {
@@ -498,6 +668,7 @@ async logout(userId: string, token: string): Promise<void> {
 ```
 
 ### 5. Verification
+
 - [x] Req 3.1 — JWT access (15 min) + refresh (7 day) tokens in httpOnly cookies
 - [x] Req 3.4 — `bcrypt.compare()` and `bcrypt.hash()` with configurable salt rounds
 - [x] Req 3.5 — logout blacklists token in Redis with TTL
@@ -510,6 +681,7 @@ async logout(userId: string, token: string): Promise<void> {
 ## Task 8 ✅ — Implement RBAC with Roles and Permissions
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Define roles enum (SURVEY_TAKER, ADVERTISER, ADMIN)
   - ✅ Define permissions enum for granular access control
@@ -521,10 +693,12 @@ async logout(userId: string, token: string): Promise<void> {
 - **Requirements**: Requirement 3
 
 ### 2. From requirements.md
+
 - **Requirement 3.3**: THE NestJS_Backend SHALL implement RBAC with roles (survey_taker, advertiser, admin) and granular permissions
 - **Requirement 3.8**: THE NestJS_Backend SHALL use Guards for endpoint-level authorization
 
 ### 3. From design.md
+
 - **Pattern**: `@Roles()` decorator + `RolesGuard`; `@Permissions()` decorator + `PermissionsGuard`; role-permission mapping constant
 - **Files**:
   - `backend/src/auth/guards/roles.guard.ts`
@@ -533,19 +707,32 @@ async logout(userId: string, token: string): Promise<void> {
   - `backend/src/auth/decorators/permissions.decorator.ts`
   - `backend/src/auth/enums/permissions.enum.ts`
 - **Interface**:
+
 ```typescript
-enum Role { SURVEY_TAKER = 'survey_taker', ADVERTISER = 'advertiser', ADMIN = 'admin' }
-enum Permission { READ_SURVEYS = 'read:surveys', CREATE_SURVEYS = 'create:surveys', MANAGE_USERS = 'manage:users' }
+enum Role {
+  SURVEY_TAKER = "survey_taker",
+  ADVERTISER = "advertiser",
+  ADMIN = "admin",
+}
+enum Permission {
+  READ_SURVEYS = "read:surveys",
+  CREATE_SURVEYS = "create:surveys",
+  MANAGE_USERS = "manage:users",
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // guards/roles.guard.ts — Req 3.3, 3.8
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [context.getHandler(), context.getClass()]);
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>("roles", [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (!requiredRoles) return true;
     const { user } = context.switchToHttp().getRequest();
     return requiredRoles.includes(user.role);
@@ -554,6 +741,7 @@ export class RolesGuard implements CanActivate {
 ```
 
 ### 5. Verification
+
 - [x] Req 3.3 — SURVEY_TAKER, ADVERTISER, ADMIN roles enforced by `RolesGuard`
 - [x] Req 3.8 — `@UseGuards(JwtAuthGuard, RolesGuard)` on protected controllers
 
@@ -562,6 +750,7 @@ export class RolesGuard implements CanActivate {
 ## Task 9 ✅ — Implement Multi-Factor Authentication (MFA)
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install OTP generation library (speakeasy)
   - ✅ Implement OTP generation and validation methods
@@ -573,20 +762,28 @@ export class RolesGuard implements CanActivate {
 - **Requirements**: Requirement 3
 
 ### 2. From requirements.md
+
 - **Requirement 3.6**: THE NestJS_Backend SHALL support multi-factor authentication (MFA) with OTP verification
 
 ### 3. From design.md
+
 - **Pattern**: TOTP via speakeasy; QR code via qrcode; backup codes hashed in DB
 - **Files**:
   - `backend/src/auth/mfa.service.ts`
   - `backend/src/auth/guards/mfa.guard.ts`
   - `backend/src/auth/dto/mfa.dto.ts`
 - **Interface**:
+
 ```typescript
-interface MfaSetupResponse { secret: string; qrCodeUrl: string; backupCodes: string[] }
+interface MfaSetupResponse {
+  secret: string;
+  qrCodeUrl: string;
+  backupCodes: string[];
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // mfa.service.ts — Req 3.6
 async setupMfa(userId: string): Promise<MfaSetupResponse> {
@@ -603,46 +800,58 @@ async verifyOtp(userId: string, token: string): Promise<boolean> {
 ```
 
 ### 5. Verification
+
 - [x] Req 3.6 — TOTP tokens verified via speakeasy; backup codes available
 
 ---
 
-## Task 10 — Implement OAuth Integration
+## Task 10 ✅ — Implement OAuth Integration
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Install Passport OAuth strategies
   - Implement OAuth strategy (`oauth.strategy.ts`)
-  - Create OAuth callback endpoints 
+  - Create OAuth callback endpoints
   - Implement user account linking for OAuth
   - Handle OAuth token storage and refresh
   - Implement OAuth user profile mapping
 - **Requirements**: Requirement 3
 
 ### 2. From requirements.md
+
 - **Requirement 3.2**: THE NestJS_Backend SHALL support multiple authentication methods (email/password, phone/OTP, OAuth)
+- the OAuth must have three login/register method, Manually, Telegram and Google.
 
 ### 3. From design.md
+
 - **Pattern**: Passport OAuth 2.0 strategy; account linking by email; JWT issued after OAuth callback
 - **Files**:
   - `backend/src/auth/strategies/oauth.strategy.ts`
   - `backend/src/auth/oauth.service.ts`
   - `backend/src/auth/dto/oauth-callback.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-GET /api/v1/auth/oauth/google
-GET /api/v1/auth/oauth/facebook
-POST /api/v1/auth/oauth/callback
+GET / api / v1 / auth / oauth / google;
+GET / api / v1 / auth / oauth / telegram;
+POST / api / v1 / auth / oauth / callback;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // strategies/oauth.strategy.ts — Req 3.2
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
   constructor(config: ConfigService) {
-    super({ clientID: config.get('GOOGLE_CLIENT_ID'), clientSecret: config.get('GOOGLE_CLIENT_SECRET'), callbackURL: '/auth/oauth/callback', scope: ['email', 'profile'] });
+    super({
+      clientID: config.get("GOOGLE_CLIENT_ID"),
+      clientSecret: config.get("GOOGLE_CLIENT_SECRET"),
+      callbackURL: "/auth/oauth/callback",
+      scope: ["email", "profile"],
+    });
   }
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
     return this.oauthService.findOrCreateOAuthUser(profile); // link by email
@@ -651,13 +860,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 ```
 
 ### 5. Verification
-- [x] Req 3.2 — Google/Facebook OAuth flows return JWT tokens on success
+
+- [x] Req 3.2 — Google/Telegram OAuth flows return JWT tokens on success
 
 ---
 
-## Task 11 — Implement User Registration and Verification
+## Task 11 ✅ — Implement User Registration and Verification
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create `users/` module with UsersModule, UsersController, UsersService
   - Implement user repository pattern (`users.repository.ts`)
@@ -670,9 +881,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 - **Requirements**: Requirement 4
 
 ### 2. From requirements.md
+
 - **Requirement 4.1**: THE NestJS_Backend SHALL provide user registration with email and phone verification
 
 ### 3. From design.md
+
 - **Pattern**: Registration → send verification email/SMS → verify token → activate account
 - **Files**:
   - `backend/src/users/users.module.ts`
@@ -683,13 +896,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   - `backend/src/users/dto/verify-email.dto.ts`
   - `backend/src/users/dto/verify-phone.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-POST /api/v1/auth/register
-POST /api/v1/auth/verify-phone
+POST / api / v1 / auth / register;
+POST / api / v1 / auth / verify - phone;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // users.service.ts — Req 4.1
 async register(dto: CreateUserDto): Promise<User> {
@@ -709,6 +924,7 @@ async verifyPhone(userId: string, otp: string): Promise<void> {
 ```
 
 ### 5. Verification
+
 - [x] Req 4.1 — registration creates user; email + phone verification tokens sent
 
 ---
@@ -716,6 +932,7 @@ async verifyPhone(userId: string, otp: string): Promise<void> {
 ## Task 12 ✅ — Implement User Profile Management
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Implement profile CRUD operations (GET, PUT)
   - ✅ Create profile update endpoint with validation
@@ -725,26 +942,39 @@ async verifyPhone(userId: string, otp: string): Promise<void> {
 - **Requirements**: Requirement 4
 
 ### 2. From requirements.md
+
 - **Requirement 4.2**: THE NestJS_Backend SHALL implement user profile management with demographic data
 - **Requirement 4.3**: THE NestJS_Backend SHALL support user preference management and consent tracking
 
 ### 3. From design.md
+
 - **Pattern**: Upsert profile on update; demographic fields stored in `Profile` model
 - **Files**:
   - `backend/src/users/users.service.ts`
   - `backend/src/users/dto/profile.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-GET /api/v1/users/profile
-PUT /api/v1/users/profile
-GET /api/v1/users/preferences
-PUT /api/v1/users/preferences
+GET / api / v1 / users / profile;
+PUT / api / v1 / users / profile;
+GET / api / v1 / users / preferences;
+PUT / api / v1 / users / preferences;
 
-interface UpdateProfileDto { first_name?: string; last_name?: string; date_of_birth?: Date; gender?: string; country?: string; occupation?: string; education_level?: string; income_range?: string }
+interface UpdateProfileDto {
+  first_name?: string;
+  last_name?: string;
+  date_of_birth?: Date;
+  gender?: string;
+  country?: string;
+  occupation?: string;
+  education_level?: string;
+  income_range?: string;
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // users.service.ts — Req 4.2, 4.3
 async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Profile> {
@@ -761,6 +991,7 @@ async updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<void
 ```
 
 ### 5. Verification
+
 - [x] Req 4.2 — demographic data stored and retrievable
 - [x] Req 4.3 — preferences + consent timestamp updated
 
@@ -769,6 +1000,7 @@ async updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<void
 ## Task 13 — Implement Trust Tier System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Define trust tier levels (Bronze, Silver, Gold, Platinum)
   - Implement trust score calculation algorithm
@@ -780,20 +1012,29 @@ async updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<void
 - **Requirements**: Requirement 4
 
 ### 2. From requirements.md
+
 - **Requirement 4.4**: THE NestJS_Backend SHALL implement trust tier calculation based on user behavior
 
 ### 3. From design.md
+
 - **Pattern**: Score-based tier calculation; recalculated after each survey completion
 - **Files**:
   - `backend/src/users/trust-tier.service.ts`
   - `backend/src/users/enums/trust-tier.enum.ts`
 - **Interface**:
+
 ```typescript
-enum TrustTier { BRONZE = 'bronze', SILVER = 'silver', GOLD = 'gold', PLATINUM = 'platinum' }
+enum TrustTier {
+  BRONZE = "bronze",
+  SILVER = "silver",
+  GOLD = "gold",
+  PLATINUM = "platinum",
+}
 // Endpoints: GET /api/v1/users/trust-tier
 ```
 
 ### 4. Implementation
+
 ```typescript
 // trust-tier.service.ts — Req 4.4
 async calculateTier(userId: string): Promise<TrustTier> {
@@ -807,6 +1048,7 @@ async calculateTier(userId: string): Promise<TrustTier> {
 ```
 
 ### 5. Verification
+
 - [x] Req 4.4 — trust tier updates after survey completion based on behavior metrics
 
 ---
@@ -814,26 +1056,40 @@ async calculateTier(userId: string): Promise<TrustTier> {
 ## Task 14 ✅ — Implement User Activity Tracking and Analytics
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Activity logging via Logger service
   - ✅ Activity event types tracked: login, registration, verification, profile updates, trust tier changes
 - **Requirements**: Requirement 4
 
 ### 2. From requirements.md
+
 - **Requirement 4.8**: THE NestJS_Backend SHALL implement user activity tracking and analytics
 
 ### 3. From design.md
+
 - **Pattern**: Structured log entries per user action; existing logging infrastructure
 - **Files**: All service files use `Logger` for activity tracking
 
 ### 4. Implementation
+
 ```typescript
 // Logging user activity — Req 4.8
-this.logger.log({ event: 'user.login', userId, ip, timestamp: new Date().toISOString() });
-this.logger.log({ event: 'user.profile_updated', userId, fields: Object.keys(dto) });
+this.logger.log({
+  event: "user.login",
+  userId,
+  ip,
+  timestamp: new Date().toISOString(),
+});
+this.logger.log({
+  event: "user.profile_updated",
+  userId,
+  fields: Object.keys(dto),
+});
 ```
 
 ### 5. Verification
+
 - [x] Req 4.8 — user activities logged with structured event data
 
 ---
@@ -841,6 +1097,7 @@ this.logger.log({ event: 'user.profile_updated', userId, fields: Object.keys(dto
 ## Task 15 — Implement Survey CRUD Operations
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create `surveys/` module with SurveysModule, SurveysController, SurveysService
   - Implement survey repository pattern (`surveys.repository.ts`)
@@ -853,11 +1110,13 @@ this.logger.log({ event: 'user.profile_updated', userId, fields: Object.keys(dto
 - **Requirements**: Requirement 5
 
 ### 2. From requirements.md
+
 - **Requirement 5.1**: THE NestJS_Backend SHALL implement survey CRUD operations with version control
 - **Requirement 5.6**: THE NestJS_Backend SHALL implement survey ownership and access control
 - **Requirement 5.8**: THE NestJS_Backend SHALL implement survey search and filtering capabilities
 
 ### 3. From design.md
+
 - **Pattern**: Soft delete; ownership guard; paginated list; auto-version on update
 - **Files**:
   - `backend/src/surveys/surveys.module.ts`
@@ -867,6 +1126,7 @@ this.logger.log({ event: 'user.profile_updated', userId, fields: Object.keys(dto
   - `backend/src/surveys/dto/create-survey.dto.ts`
   - `backend/src/surveys/dto/update-survey.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST   /api/v1/surveys
@@ -878,6 +1138,7 @@ POST   /api/v1/surveys/:id/duplicate
 ```
 
 ### 4. Implementation
+
 ```typescript
 // surveys.service.ts — Req 5.1, 5.6
 async update(id: string, dto: UpdateSurveyDto, userId: string): Promise<Survey> {
@@ -897,6 +1158,7 @@ async findAll(query: SurveySearchDto): Promise<PaginatedResult<Survey>> { // Req
 ```
 
 ### 5. Verification
+
 - [x] Req 5.1 — update creates version snapshot before applying changes
 - [x] Req 5.6 — ownership check before update/delete
 - [x] Req 5.8 — list endpoint supports `q`, `status`, `tag` query params
@@ -906,6 +1168,7 @@ async findAll(query: SurveySearchDto): Promise<PaginatedResult<Survey>> { // Req
 ## Task 16 ✅ — Implement Survey Validation Service
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create canonical survey schema definition
   - ✅ Implement survey validation service
@@ -918,17 +1181,20 @@ async findAll(query: SurveySearchDto): Promise<PaginatedResult<Survey>> { // Req
 - **Requirements**: Requirement 5, Requirement 21
 
 ### 2. From requirements.md
+
 - **Requirement 5.2**: THE NestJS_Backend SHALL validate survey structure against canonical JSON schema
 - **Requirement 5.5**: THE NestJS_Backend SHALL provide survey preview and validation endpoints
 - **Requirement 21.1**: THE NestJS_Backend SHALL implement request payload validation using class-validator
 - **Requirement 21.4**: THE NestJS_Backend SHALL implement field-level validation with detailed error messages
 
 ### 3. From design.md
+
 - **Pattern**: AJV JSON schema validation; error aggregation returns all failures, not just first
 - **Files**:
   - `backend/src/surveys/survey-validation.service.ts`
   - `backend/src/surveys/schemas/survey-canonical.schema.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/surveys/validate
@@ -939,6 +1205,7 @@ interface ValidationError { field: string; message: string; code: string }
 ```
 
 ### 4. Implementation
+
 ```typescript
 // survey-validation.service.ts — Req 5.2, 21.4
 validate(definition: SurveyDefinition): ValidationResult {
@@ -953,6 +1220,7 @@ validate(definition: SurveyDefinition): ValidationResult {
 ```
 
 ### 5. Verification
+
 - [x] Req 5.2 — invalid surveys rejected with schema errors
 - [x] Req 5.5 — `POST /surveys/validate` returns validation result
 - [x] Req 21.1 — class-validator decorators on all DTOs
@@ -963,6 +1231,7 @@ validate(definition: SurveyDefinition): ValidationResult {
 ## Task 17 ✅ — Implement Survey Versioning System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Implement version creation on survey updates (auto snapshot before update)
   - ✅ Add version comparison and diff generation
@@ -973,13 +1242,16 @@ validate(definition: SurveyDefinition): ValidationResult {
 - **Requirements**: Requirement 5
 
 ### 2. From requirements.md
+
 - **Requirement 5.1**: THE NestJS_Backend SHALL implement survey CRUD operations with version control
 
 ### 3. From design.md
+
 - **Pattern**: Snapshot stored in `SurveyVersion` model before each update; diff computed on compare
 - **Files**:
   - `backend/src/surveys/survey-versioning.service.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/surveys/:id/versions
@@ -989,6 +1261,7 @@ GET  /api/v1/surveys/:id/versions/compare/:v1/:v2
 ```
 
 ### 4. Implementation
+
 ```typescript
 // survey-versioning.service.ts — Req 5.1
 async createVersion(survey: Survey): Promise<void> {
@@ -1002,6 +1275,7 @@ async rollback(surveyId: string, version: number, userId: string): Promise<Surve
 ```
 
 ### 5. Verification
+
 - [x] Req 5.1 — version snapshot created before every update; rollback restores previous definition
 
 ---
@@ -1009,6 +1283,7 @@ async rollback(surveyId: string, version: number, userId: string): Promise<Surve
 ## Task 18 ✅ — Implement Survey Templates and Question Banks
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create template service with CRUD operations
   - ✅ Implement template creation from existing surveys
@@ -1020,15 +1295,18 @@ async rollback(surveyId: string, version: number, userId: string): Promise<Surve
 - **Requirements**: Requirement 5
 
 ### 2. From requirements.md
+
 - **Requirement 5.3**: THE NestJS_Backend SHALL support survey templates and question banks
 - **Requirement 5.4**: THE NestJS_Backend SHALL implement survey duplication and cloning functionality
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/surveys/template.service.ts`
   - `backend/src/surveys/question-bank.service.ts`
   - `backend/src/surveys/dto/template.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/surveys/templates
@@ -1040,6 +1318,7 @@ POST /api/v1/surveys/question-bank
 ```
 
 ### 4. Implementation
+
 ```typescript
 // template.service.ts — Req 5.3, 5.4
 async createFromSurvey(surveyId: string, userId: string, dto: CreateTemplateDto): Promise<Template> {
@@ -1054,6 +1333,7 @@ async instantiate(templateId: string, userId: string): Promise<Survey> {
 ```
 
 ### 5. Verification
+
 - [x] Req 5.3 — templates CRUD operational; question bank searchable by tag
 - [x] Req 5.4 — `instantiate()` clones template into new survey
 
@@ -1062,6 +1342,7 @@ async instantiate(templateId: string, userId: string): Promise<Survey> {
 ## Task 19 ✅ — Implement Survey Import/Export System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create survey import/export service
   - ✅ Implement Excel file parsing using xlsx library
@@ -1072,6 +1353,7 @@ async instantiate(templateId: string, userId: string): Promise<Survey> {
 - **Requirements**: Requirement 7
 
 ### 2. From requirements.md
+
 - **Requirement 7.1**: THE NestJS_Backend SHALL implement Excel file upload and parsing for survey import
 - **Requirement 7.2**: THE NestJS_Backend SHALL provide survey export in Excel, PDF, and JSON formats
 - **Requirement 7.3**: THE NestJS_Backend SHALL implement asynchronous processing for large import/export operations
@@ -1080,10 +1362,12 @@ async instantiate(templateId: string, userId: string): Promise<Survey> {
 - **Requirement 7.8**: THE NestJS_Backend SHALL provide import preview functionality
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/surveys/survey-import-export.service.ts`
   - `backend/src/surveys/dto/import-export.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/surveys/import
@@ -1095,6 +1379,7 @@ GET  /api/v1/surveys/export/download/:jobId
 ```
 
 ### 4. Implementation
+
 ```typescript
 // survey-import-export.service.ts — Req 7.1, 7.2, 7.3
 async importFromExcel(buffer: Buffer): Promise<ImportPreview> { // Req 7.1, 7.8
@@ -1122,6 +1407,7 @@ async queueExport(surveyId: string, format: string): Promise<string> { // Req 7.
 ```
 
 ### 5. Verification
+
 - [x] Req 7.1 — Excel parsed to survey definition via xlsx
 - [x] Req 7.2 — export in JSON, Excel, PDF formats
 - [x] Req 7.3 — async export via Bull queue
@@ -1134,6 +1420,7 @@ async queueExport(surveyId: string, format: string): Promise<string> { // Req 7.
 ## Task 20 ✅ — Implement AI Service Integration
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `ai-integration/` module
   - ✅ Implement AI service client with HTTP integration
@@ -1146,6 +1433,7 @@ async queueExport(surveyId: string, format: string): Promise<string> { // Req 7.
 - **Requirements**: Requirement 6
 
 ### 2. From requirements.md
+
 - **Requirement 6.1**: THE NestJS_Backend SHALL integrate with external AI services for survey generation
 - **Requirement 6.3**: THE NestJS_Backend SHALL provide AI conversation context management
 - **Requirement 6.4**: THE NestJS_Backend SHALL implement rate limiting for AI operations (100 requests per hour per user)
@@ -1155,6 +1443,7 @@ async queueExport(surveyId: string, format: string): Promise<string> { // Req 7.
 - **Requirement 6.10**: THE NestJS_Backend SHALL implement AI service failover and error handling
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/ai-integration/ai-integration.module.ts`
   - `backend/src/ai-integration/ai-integration.service.ts`
@@ -1163,6 +1452,7 @@ async queueExport(surveyId: string, format: string): Promise<string> { // Req 7.
   - `backend/src/ai-integration/dto/ai-prompt.dto.ts`
   - `backend/src/ai-integration/dto/ai-response.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/surveys/ai/generate
@@ -1174,6 +1464,7 @@ GET  /api/v1/surveys/ai/quota
 ```
 
 ### 4. Implementation
+
 ```typescript
 // ai-integration.service.ts — Req 6.1, 6.7, 6.8, 6.10
 @Throttle({ default: { limit: 100, ttl: 3600 } }) // Req 6.4
@@ -1198,6 +1489,7 @@ async generate(dto: AIPromptDto, userId: string): Promise<SurveyDefinition> {
 ```
 
 ### 5. Verification
+
 - [x] Req 6.1 — HTTP call to external AI service
 - [x] Req 6.3 — conversation context passed in request
 - [x] Req 6.4 — `@Throttle` limits 100 req/hr per user
@@ -1210,6 +1502,7 @@ async generate(dto: AIPromptDto, userId: string): Promise<SurveyDefinition> {
 ## Task 21 ✅ — Implement Prompt Injection Detection
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create prompt validation service
   - ✅ Implement injection pattern detection algorithms
@@ -1219,21 +1512,30 @@ async generate(dto: AIPromptDto, userId: string): Promise<SurveyDefinition> {
 - **Requirements**: Requirement 6, Requirement 28
 
 ### 2. From requirements.md
+
 - **Requirement 6.2**: THE NestJS_Backend SHALL implement prompt injection detection and prevention
 - **Requirement 28.3**: WHEN a prompt contains malicious content, THE AI_Prompt_Validator SHALL detect and reject with security warnings
 - **Requirement 28.7**: WHEN prompt injection patterns are detected, THE AI_Prompt_Validator SHALL log security events and block processing
 - **Requirement 28.8**: THE AI_Prompt_Validator SHALL sanitize prompt content while preserving legitimate user intent
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/ai-integration/prompt-validation.service.ts`
   - `backend/src/ai-integration/dto/prompt-validation-result.dto.ts`
 - **Interface**:
+
 ```typescript
-interface PromptValidationResult { is_safe: boolean; injection_detected: boolean; sanitized_prompt?: string; security_warnings: string[] }
+interface PromptValidationResult {
+  is_safe: boolean;
+  injection_detected: boolean;
+  sanitized_prompt?: string;
+  security_warnings: string[];
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // prompt-validation.service.ts — Req 6.2, 28.3, 28.7, 28.8
 private injectionPatterns = [/ignore (previous|all) instructions/i, /system prompt/i, /jailbreak/i, /\[INST\]/i, /<\|im_start\|>/i];
@@ -1255,6 +1557,7 @@ validate(prompt: string): PromptValidationResult {
 ```
 
 ### 5. Verification
+
 - [x] Req 6.2 — injection patterns detected before AI call
 - [x] Req 28.3 — malicious prompts rejected with warnings
 - [x] Req 28.7 — security events logged
@@ -1265,6 +1568,7 @@ validate(prompt: string): PromptValidationResult {
 ## Task 22 ✅ — Implement Campaign CRUD and Lifecycle Management
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `campaigns/` module
   - ✅ Implement campaign repository pattern
@@ -1277,6 +1581,7 @@ validate(prompt: string): PromptValidationResult {
 - **Requirements**: Requirement 8, Requirement 27
 
 ### 2. From requirements.md
+
 - **Requirement 8.1**: THE NestJS_Backend SHALL implement campaign CRUD operations with lifecycle management
 - **Requirement 8.2**: THE NestJS_Backend SHALL support campaign status transitions (draft, pending, approved, active, paused, completed)
 - **Requirement 8.3**: THE NestJS_Backend SHALL implement campaign approval workflow with admin review
@@ -1285,6 +1590,7 @@ validate(prompt: string): PromptValidationResult {
 - **Requirement 27.2**: THE Campaign_Validator SHALL validate required fields: campaign_id, advertiser_id, survey_id, targeting_criteria, budget_settings, lifecycle_status
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/campaigns/campaigns.module.ts`
   - `backend/src/campaigns/campaigns.controller.ts`
@@ -1293,6 +1599,7 @@ validate(prompt: string): PromptValidationResult {
   - `backend/src/campaigns/dto/create-campaign.dto.ts`
   - `backend/src/campaigns/dto/update-campaign.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST  /api/v1/campaigns
@@ -1307,6 +1614,7 @@ enum CampaignStatus { DRAFT, PENDING, APPROVED, ACTIVE, PAUSED, COMPLETED }
 ```
 
 ### 4. Implementation
+
 ```typescript
 // campaigns.service.ts — Req 8.2, 27.2
 private validTransitions: Record<CampaignStatus, CampaignStatus[]> = {
@@ -1327,6 +1635,7 @@ async transition(id: string, targetStatus: CampaignStatus): Promise<Campaign> {
 ```
 
 ### 5. Verification
+
 - [x] Req 8.1 — campaign CRUD with ownership validation
 - [x] Req 8.2 — invalid status transitions throw `BadRequestException`
 - [x] Req 8.3 — `submit` moves to PENDING for admin review
@@ -1337,6 +1646,7 @@ async transition(id: string, targetStatus: CampaignStatus): Promise<Campaign> {
 ## Task 23 ✅ — Implement Audience Targeting Engine
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create targeting service
   - ✅ Implement demographic targeting (age, gender, education, income)
@@ -1350,6 +1660,7 @@ async transition(id: string, targetStatus: CampaignStatus): Promise<Campaign> {
 - **Requirements**: Requirement 9
 
 ### 2. From requirements.md
+
 - **Requirement 9.1**: THE NestJS_Backend SHALL implement demographic targeting with multiple criteria
 - **Requirement 9.2**: THE NestJS_Backend SHALL provide real-time audience size estimation
 - **Requirement 9.3**: THE NestJS_Backend SHALL support complex targeting logic with AND/OR operators
@@ -1358,21 +1669,30 @@ async transition(id: string, targetStatus: CampaignStatus): Promise<Campaign> {
 - **Requirement 9.8**: THE NestJS_Backend SHALL implement targeting validation and conflict detection
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/campaigns/targeting.service.ts`
   - `backend/src/campaigns/targeting.controller.ts`
   - `backend/src/campaigns/dto/targeting-criteria.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-POST /api/v1/targeting/estimate
-GET  /api/v1/targeting/demographics
-POST /api/v1/targeting/lookalike
+POST / api / v1 / targeting / estimate;
+GET / api / v1 / targeting / demographics;
+POST / api / v1 / targeting / lookalike;
 
-interface TargetingCriteria { demographics?: DemographicFilter; geographic?: GeoFilter; interests?: string[]; behaviors?: string[]; operator: 'AND' | 'OR' }
+interface TargetingCriteria {
+  demographics?: DemographicFilter;
+  geographic?: GeoFilter;
+  interests?: string[];
+  behaviors?: string[];
+  operator: "AND" | "OR";
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // targeting.service.ts — Req 9.1, 9.2, 9.3
 async estimateAudienceSize(criteria: TargetingCriteria): Promise<number> {
@@ -1389,6 +1709,7 @@ private buildQuery(criteria: TargetingCriteria): Prisma.ProfileWhereInput {
 ```
 
 ### 5. Verification
+
 - [x] Req 9.1 — demographic filters applied in Prisma query
 - [x] Req 9.2 — real-time count from database
 - [x] Req 9.3 — AND/OR logic in `buildQuery`
@@ -1400,6 +1721,7 @@ private buildQuery(criteria: TargetingCriteria): Prisma.ProfileWhereInput {
 ## Task 24 ✅ — Implement Budget Management System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create budget service
   - ✅ Implement budget allocation and tracking
@@ -1410,14 +1732,17 @@ private buildQuery(criteria: TargetingCriteria): Prisma.ProfileWhereInput {
 - **Requirements**: Requirement 8
 
 ### 2. From requirements.md
+
 - **Requirement 8.6**: THE NestJS_Backend SHALL support campaign budget management and monitoring
 - **Requirement 8.7**: THE NestJS_Backend SHALL implement campaign performance tracking
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/campaigns/budget.service.ts`
   - `backend/src/campaigns/dto/budget-settings.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/campaigns/:id/budget
@@ -1426,6 +1751,7 @@ POST /api/v1/campaigns/:id/budget/topup
 ```
 
 ### 4. Implementation
+
 ```typescript
 // budget.service.ts — Req 8.6, 8.7
 async checkBudget(campaignId: string, cpr: number): Promise<boolean> {
@@ -1440,6 +1766,7 @@ async checkBudget(campaignId: string, cpr: number): Promise<boolean> {
 ```
 
 ### 5. Verification
+
 - [x] Req 8.6 — budget tracked and enforced per response
 - [x] Req 8.7 — CPR and spend metrics tracked
 
@@ -1448,6 +1775,7 @@ async checkBudget(campaignId: string, cpr: number): Promise<boolean> {
 ## Task 25 ✅ — Implement Survey Feed Generation
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create survey feed service
   - ✅ Implement match score algorithm
@@ -1459,15 +1787,18 @@ async checkBudget(campaignId: string, cpr: number): Promise<boolean> {
 - **Requirements**: Requirement 10
 
 ### 2. From requirements.md
+
 - **Requirement 10.1**: THE NestJS_Backend SHALL implement survey feed generation with personalized recommendations
 - **Requirement 10.2**: THE NestJS_Backend SHALL provide screener question evaluation and qualification
 - **Requirement 10.3**: THE NestJS_Backend SHALL implement survey question delivery with pagination
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/surveys/survey-feed.service.ts`
   - `backend/src/surveys/dto/survey-feed.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET /api/v1/surveys/feed
@@ -1478,6 +1809,7 @@ POST /api/v1/surveys/:id/screener
 ```
 
 ### 4. Implementation
+
 ```typescript
 // survey-feed.service.ts — Req 10.1, 10.2
 async getPersonalizedFeed(userId: string, pagination: PaginationDto): Promise<PaginatedResult<SurveyFeedItem>> {
@@ -1494,6 +1826,7 @@ async evaluateScreener(surveyId: string, userId: string, answers: Record<string,
 ```
 
 ### 5. Verification
+
 - [x] Req 10.1 — personalized feed sorted by match score
 - [x] Req 10.2 — screener evaluation disqualifies non-matching users
 - [x] Req 10.3 — paginated question delivery
@@ -1503,6 +1836,7 @@ async evaluateScreener(surveyId: string, userId: string, answers: Record<string,
 ## Task 26 ✅ — Implement Survey Response System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create response service and repository
   - ✅ Implement response submission endpoint
@@ -1516,6 +1850,7 @@ async evaluateScreener(surveyId: string, userId: string, answers: Record<string,
 - **Requirements**: Requirement 10, Requirement 26
 
 ### 2. From requirements.md
+
 - **Requirement 10.4**: THE NestJS_Backend SHALL support branching logic evaluation and question flow control
 - **Requirement 10.5**: THE NestJS_Backend SHALL implement response validation and quality checks
 - **Requirement 10.6**: THE NestJS_Backend SHALL provide auto-save functionality for survey progress
@@ -1525,11 +1860,13 @@ async evaluateScreener(surveyId: string, userId: string, answers: Record<string,
 - **Requirement 26.5**: FOR ALL valid Response objects, parsing then printing then parsing SHALL produce an equivalent object (round-trip property)
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/surveys/response.service.ts`
   - `backend/src/surveys/response.repository.ts`
   - `backend/src/surveys/dto/survey-response.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/surveys/:id/responses
@@ -1539,6 +1876,7 @@ POST /api/v1/surveys/:id/complete
 ```
 
 ### 4. Implementation
+
 ```typescript
 // response.service.ts — Req 10.5, 26.1, 26.2, 26.5
 async submit(dto: SubmitResponseDto): Promise<Response> {
@@ -1561,6 +1899,7 @@ async autoSave(surveyId: string, userId: string, progress: Partial<ResponseDto>)
 ```
 
 ### 5. Verification
+
 - [x] Req 10.4 — branching logic evaluates next question based on answer
 - [x] Req 10.5 — fraud detection called before saving
 - [x] Req 10.6 — progress cached for auto-save
@@ -1573,6 +1912,7 @@ async autoSave(surveyId: string, userId: string, progress: Partial<ResponseDto>)
 ## Task 27 ✅ — Implement Fraud Detection Engine
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `fraud-detection/` module
   - ✅ Implement fraud detection service
@@ -1586,6 +1926,7 @@ async autoSave(surveyId: string, userId: string, progress: Partial<ResponseDto>)
 - **Requirements**: Requirement 11
 
 ### 2. From requirements.md
+
 - **Requirement 11.1**: THE NestJS_Backend SHALL implement real-time fraud detection during survey completion
 - **Requirement 11.2**: THE NestJS_Backend SHALL analyze behavioral signals (response time, click patterns, interaction depth)
 - **Requirement 11.3**: THE NestJS_Backend SHALL calculate fraud confidence scores (0-100) for each response
@@ -1594,17 +1935,29 @@ async autoSave(surveyId: string, userId: string, progress: Partial<ResponseDto>)
 - **Requirement 11.6**: THE NestJS_Backend SHALL provide fraud score thresholds and automatic response rejection
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/fraud-detection/fraud-detection.service.ts`
   - `backend/src/fraud-detection/behavioral-analysis.service.ts`
   - `backend/src/fraud-detection/pattern-detection.service.ts`
   - `backend/src/fraud-detection/dto/fraud-analysis.dto.ts`
 - **Interface**:
+
 ```typescript
-interface FraudAnalysisResult { fraud_score: number; is_fraudulent: boolean; signals: { straight_lining: boolean; auto_clicking: boolean; honeypot_violation: boolean }; recommendation: 'ACCEPT' | 'REVIEW' | 'REJECT' }
+interface FraudAnalysisResult {
+  fraud_score: number;
+  is_fraudulent: boolean;
+  signals: {
+    straight_lining: boolean;
+    auto_clicking: boolean;
+    honeypot_violation: boolean;
+  };
+  recommendation: "ACCEPT" | "REVIEW" | "REJECT";
+}
 ```
 
 ### 4. Implementation
+
 ```typescript
 // fraud-detection.service.ts — Req 11.1, 11.3, 11.6
 async analyze(response: ResponseDto): Promise<FraudAnalysisResult> {
@@ -1621,6 +1974,7 @@ async analyze(response: ResponseDto): Promise<FraudAnalysisResult> {
 ```
 
 ### 5. Verification
+
 - [x] Req 11.1 — fraud analysis called in real-time during submission
 - [x] Req 11.2 — behavioral signals (response time, clicks) analyzed
 - [x] Req 11.3 — score 0-100 calculated
@@ -1633,6 +1987,7 @@ async analyze(response: ResponseDto): Promise<FraudAnalysisResult> {
 ## Task 28 ✅ — Implement Wallet and Points System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `payments/` module
   - ✅ Implement wallet service
@@ -1643,23 +1998,27 @@ async analyze(response: ResponseDto): Promise<FraudAnalysisResult> {
 - **Requirements**: Requirement 12
 
 ### 2. From requirements.md
+
 - **Requirement 12.1**: THE NestJS_Backend SHALL implement points calculation and wallet management
 - **Requirement 12.5**: THE NestJS_Backend SHALL provide transaction history and status tracking
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/payments/wallet.service.ts`
   - `backend/src/payments/payments.controller.ts`
   - `backend/src/payments/dto/wallet.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-GET /api/v1/rewards/wallet
-GET /api/v1/rewards/balance
-GET /api/v1/rewards/transactions
+GET / api / v1 / rewards / wallet;
+GET / api / v1 / rewards / balance;
+GET / api / v1 / rewards / transactions;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // wallet.service.ts — Req 12.1, 12.5
 async creditPoints(userId: string, surveyId: string): Promise<void> {
@@ -1672,6 +2031,7 @@ async creditPoints(userId: string, surveyId: string): Promise<void> {
 ```
 
 ### 5. Verification
+
 - [x] Req 12.1 — points credited to wallet after survey completion
 - [x] Req 12.5 — transaction record created for each credit/debit
 
@@ -1680,6 +2040,7 @@ async creditPoints(userId: string, surveyId: string): Promise<void> {
 ## Task 29 ✅ — Implement Mobile Wallet Integration
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create payout service
   - ✅ Implement ABA Pay, WING, TrueMoney providers
@@ -1691,6 +2052,7 @@ async creditPoints(userId: string, surveyId: string): Promise<void> {
 - **Requirements**: Requirement 12
 
 ### 2. From requirements.md
+
 - **Requirement 12.2**: THE NestJS_Backend SHALL support multiple payout methods (mobile wallets, bank transfer)
 - **Requirement 12.3**: THE NestJS_Backend SHALL integrate with Mobile_Wallet_Provider APIs (ABA Pay, WING, TrueMoney)
 - **Requirement 12.4**: THE NestJS_Backend SHALL implement withdrawal request processing and validation
@@ -1698,6 +2060,7 @@ async creditPoints(userId: string, surveyId: string): Promise<void> {
 - **Requirement 12.8**: THE NestJS_Backend SHALL implement withdrawal limits and fraud prevention
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/payments/payout.service.ts`
   - `backend/src/payments/providers/aba-pay.provider.ts`
@@ -1705,6 +2068,7 @@ async creditPoints(userId: string, surveyId: string): Promise<void> {
   - `backend/src/payments/providers/true-money.provider.ts`
   - `backend/src/payments/dto/withdrawal-request.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/rewards/withdraw
@@ -1713,6 +2077,7 @@ PUT  /api/v1/rewards/withdrawals/:id/retry
 ```
 
 ### 4. Implementation
+
 ```typescript
 // payout.service.ts — Req 12.3, 12.6, 12.8
 async processWithdrawal(dto: WithdrawalRequestDto): Promise<Withdrawal> {
@@ -1729,6 +2094,7 @@ async processWithdrawal(dto: WithdrawalRequestDto): Promise<Withdrawal> {
 ```
 
 ### 5. Verification
+
 - [x] Req 12.2 — provider selected based on payment_method
 - [x] Req 12.3 — ABA Pay, WING, TrueMoney providers implemented
 - [x] Req 12.4 — withdrawal validated before processing
@@ -1740,6 +2106,7 @@ async processWithdrawal(dto: WithdrawalRequestDto): Promise<Withdrawal> {
 ## Task 30 ✅ — Implement Payment Gateway Integration
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create payment gateway service
   - ✅ Implement payment processing with PCI compliance
@@ -1750,6 +2117,7 @@ async processWithdrawal(dto: WithdrawalRequestDto): Promise<Withdrawal> {
 - **Requirements**: Requirement 17, Requirement 29
 
 ### 2. From requirements.md
+
 - **Requirement 17.1**: THE NestJS_Backend SHALL integrate with multiple Payment_Gateway providers
 - **Requirement 17.2**: THE NestJS_Backend SHALL implement secure payment processing with PCI compliance
 - **Requirement 17.6**: THE NestJS_Backend SHALL implement refund processing and dispute handling
@@ -1758,19 +2126,22 @@ async processWithdrawal(dto: WithdrawalRequestDto): Promise<Withdrawal> {
 - **Requirement 29.10**: THE Payment_Validator SHALL ensure PCI compliance and secure handling of sensitive payment data
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/payments/payment-gateway.service.ts`
   - `backend/src/payments/billing.controller.ts`
   - `backend/src/payments/dto/payment-request.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-POST /api/v1/billing/wallet/topup
-GET  /api/v1/billing/invoices
-POST /api/v1/billing/payment-methods
+POST / api / v1 / billing / wallet / topup;
+GET / api / v1 / billing / invoices;
+POST / api / v1 / billing / payment - methods;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // payment-gateway.service.ts — Req 17.2, 29.10
 async processPayment(dto: PaymentRequestDto): Promise<Transaction> {
@@ -1785,6 +2156,7 @@ async processPayment(dto: PaymentRequestDto): Promise<Transaction> {
 ```
 
 ### 5. Verification
+
 - [x] Req 17.1 — multiple gateway providers supported
 - [x] Req 17.2 — raw card data never stored/logged
 - [x] Req 17.6 — refund endpoint operational
@@ -1796,6 +2168,7 @@ async processPayment(dto: PaymentRequestDto): Promise<Transaction> {
 ## Task 31 ✅ — Implement Campaign Analytics Engine
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `analytics/` module
   - ✅ Implement analytics service and repository
@@ -1808,6 +2181,7 @@ async processPayment(dto: PaymentRequestDto): Promise<Transaction> {
 - **Requirements**: Requirement 13
 
 ### 2. From requirements.md
+
 - **Requirement 13.1**: THE NestJS_Backend SHALL implement real-time campaign analytics calculation
 - **Requirement 13.2**: THE NestJS_Backend SHALL provide response data aggregation and cross-tabulation
 - **Requirement 13.3**: THE NestJS_Backend SHALL implement demographic analysis and segmentation
@@ -1815,12 +2189,14 @@ async processPayment(dto: PaymentRequestDto): Promise<Transaction> {
 - **Requirement 13.8**: THE NestJS_Backend SHALL implement performance benchmarking and comparisons
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/analytics/analytics.service.ts`
   - `backend/src/analytics/analytics.repository.ts`
   - `backend/src/analytics/aggregation.service.ts`
   - `backend/src/analytics/dto/analytics-query.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET /api/v1/campaigns/:id/analytics
@@ -1830,6 +2206,7 @@ GET /api/v1/analytics/dashboard
 ```
 
 ### 4. Implementation
+
 ```typescript
 // analytics.service.ts — Req 13.1, 13.2, 13.3
 async getCampaignAnalytics(campaignId: string): Promise<CampaignAnalytics> {
@@ -1847,6 +2224,7 @@ async getCampaignAnalytics(campaignId: string): Promise<CampaignAnalytics> {
 ```
 
 ### 5. Verification
+
 - [x] Req 13.1 — real-time metrics computed from response data
 - [x] Req 13.2 — cross-tabulation aggregated
 - [x] Req 13.3 — demographic breakdown returned
@@ -1857,6 +2235,7 @@ async getCampaignAnalytics(campaignId: string): Promise<CampaignAnalytics> {
 ## Task 32 ✅ — Implement Custom Report Generation
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create reporting service
   - ✅ Implement custom report builder
@@ -1867,16 +2246,19 @@ async getCampaignAnalytics(campaignId: string): Promise<CampaignAnalytics> {
 - **Requirements**: Requirement 13
 
 ### 2. From requirements.md
+
 - **Requirement 13.4**: THE NestJS_Backend SHALL support custom report generation and scheduling
 - **Requirement 13.5**: THE NestJS_Backend SHALL provide data export with anonymization options
 - **Requirement 13.9**: THE NestJS_Backend SHALL provide AI-powered insights and recommendations
 - **Requirement 13.10**: THE NestJS_Backend SHALL implement analytics data retention and archival
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/analytics/reporting.service.ts`
   - `backend/src/analytics/dto/report-config.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/analytics/reports
@@ -1885,6 +2267,7 @@ POST /api/v1/campaigns/:id/export
 ```
 
 ### 4. Implementation
+
 ```typescript
 // reporting.service.ts — Req 13.4, 13.5
 async generateReport(config: ReportConfigDto): Promise<Report> {
@@ -1900,6 +2283,7 @@ async scheduleReport(config: ReportConfigDto): Promise<string> { // Req 13.4
 ```
 
 ### 5. Verification
+
 - [x] Req 13.4 — cron-based report scheduling via Bull
 - [x] Req 13.5 — PII anonymized before export
 - [x] Req 13.10 — old report data archived after retention period
@@ -1909,6 +2293,7 @@ async scheduleReport(config: ReportConfigDto): Promise<string> { // Req 13.4
 ## Task 33 ✅ — Implement Campaign Review and Approval Workflow
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `admin/` module
   - ✅ Implement approval workflow service
@@ -1919,15 +2304,18 @@ async scheduleReport(config: ReportConfigDto): Promise<string> { // Req 13.4
 - **Requirements**: Requirement 14
 
 ### 2. From requirements.md
+
 - **Requirement 14.1**: THE NestJS_Backend SHALL implement campaign review and approval workflows
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/admin/admin.module.ts`
   - `backend/src/admin/admin.controller.ts`
   - `backend/src/admin/approval-workflow.service.ts`
   - `backend/src/admin/dto/campaign-review.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/admin/campaigns/review-queue
@@ -1937,6 +2325,7 @@ POST /api/v1/admin/campaigns/:id/request-revision
 ```
 
 ### 4. Implementation
+
 ```typescript
 // approval-workflow.service.ts — Req 14.1
 async approve(campaignId: string, adminId: string, notes: string): Promise<Campaign> {
@@ -1948,6 +2337,7 @@ async approve(campaignId: string, adminId: string, notes: string): Promise<Campa
 ```
 
 ### 5. Verification
+
 - [x] Req 14.1 — review queue, approve, reject, request-revision endpoints operational
 
 ---
@@ -1955,6 +2345,7 @@ async approve(campaignId: string, adminId: string, notes: string): Promise<Campa
 ## Task 34 ✅ — Implement Content Moderation System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create moderation service
   - ✅ Implement content flagging system
@@ -1965,13 +2356,16 @@ async approve(campaignId: string, adminId: string, notes: string): Promise<Campa
 - **Requirements**: Requirement 14
 
 ### 2. From requirements.md
+
 - **Requirement 14.2**: THE NestJS_Backend SHALL provide content moderation and flagging systems
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/admin/moderation.service.ts`
   - `backend/src/admin/dto/moderation-action.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET  /api/v1/admin/moderation/queue
@@ -1980,6 +2374,7 @@ GET  /api/v1/admin/moderation/reports
 ```
 
 ### 4. Implementation
+
 ```typescript
 // moderation.service.ts — Req 14.2
 async takeAction(targetId: string, action: ModerationAction, adminId: string): Promise<void> {
@@ -1990,6 +2385,7 @@ async takeAction(targetId: string, action: ModerationAction, adminId: string): P
 ```
 
 ### 5. Verification
+
 - [x] Req 14.2 — moderation queue and action endpoints operational
 
 ---
@@ -1997,6 +2393,7 @@ async takeAction(targetId: string, action: ModerationAction, adminId: string): P
 ## Task 35 ✅ — Implement User Account Management for Admins
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Implement user suspension functionality
   - ✅ Add user ban management
@@ -2007,15 +2404,18 @@ async takeAction(targetId: string, action: ModerationAction, adminId: string): P
 - **Requirements**: Requirement 14
 
 ### 2. From requirements.md
+
 - **Requirement 14.3**: THE NestJS_Backend SHALL implement user account management and suspension
 - **Requirement 14.4**: THE NestJS_Backend SHALL support data access control and governance
 - **Requirement 14.7**: THE NestJS_Backend SHALL support bulk operations for administrative efficiency
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/admin/user-management.service.ts`
   - `backend/src/admin/dto/user-moderation.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET    /api/v1/admin/users
@@ -2025,6 +2425,7 @@ DELETE /api/v1/admin/users/:id/ban
 ```
 
 ### 4. Implementation
+
 ```typescript
 // user-management.service.ts — Req 14.3, 14.7
 async suspendUser(userId: string, adminId: string, reason: string): Promise<void> {
@@ -2038,6 +2439,7 @@ async bulkSuspend(userIds: string[], adminId: string, reason: string): Promise<v
 ```
 
 ### 5. Verification
+
 - [x] Req 14.3 — suspend/ban/unban endpoints operational
 - [x] Req 14.4 — data access requires ADMIN role
 - [x] Req 14.7 — `bulkSuspend` operates on multiple users in one call
@@ -2047,6 +2449,7 @@ async bulkSuspend(userIds: string[], adminId: string, reason: string): Promise<v
 ## Task 36 ✅ — Implement WebSocket Gateway
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `realtime/` module
   - ✅ Implement WebSocket gateway
@@ -2057,16 +2460,19 @@ async bulkSuspend(userIds: string[], adminId: string, reason: string): Promise<v
 - **Requirements**: Requirement 15
 
 ### 2. From requirements.md
+
 - **Requirement 15.1**: THE NestJS_Backend SHALL implement WebSocket support for real-time communication
 - **Requirement 15.6**: THE NestJS_Backend SHALL implement connection management and authentication
 - **Requirement 15.10**: THE NestJS_Backend SHALL implement connection scaling and load balancing
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/realtime/realtime.module.ts`
   - `backend/src/realtime/realtime.gateway.ts`
   - `backend/src/realtime/connection-manager.service.ts`
 - **Interface**:
+
 ```typescript
 // WebSocket Endpoints
 WS /api/v1/ws/notifications
@@ -2075,18 +2481,24 @@ WS /api/v1/ws/survey/:surveyId/responses
 ```
 
 ### 4. Implementation
+
 ```typescript
 // realtime.gateway.ts — Req 15.1, 15.6
-@WebSocketGateway({ namespace: '/ws', cors: { origin: '*' } })
-export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+@WebSocketGateway({ namespace: "/ws", cors: { origin: "*" } })
+export class RealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   handleConnection(client: Socket) {
     const token = client.handshake.auth.token;
     const user = this.jwtService.verify(token); // Req 15.6 auth on connect
     this.connectionManager.register(user.id, client.id);
   }
-  handleDisconnect(client: Socket) { this.connectionManager.unregister(client.id); }
+  handleDisconnect(client: Socket) {
+    this.connectionManager.unregister(client.id);
+  }
 
-  async broadcastToUser(userId: string, event: string, data: unknown) { // Req 15.1
+  async broadcastToUser(userId: string, event: string, data: unknown) {
+    // Req 15.1
     const socketId = this.connectionManager.getSocketId(userId);
     if (socketId) this.server.to(socketId).emit(event, data);
   }
@@ -2094,6 +2506,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 ```
 
 ### 5. Verification
+
 - [x] Req 15.1 — WebSocket gateway handles bidirectional messages
 - [x] Req 15.6 — JWT verified on connection
 - [x] Req 15.10 — connection manager supports Redis adapter for scaling
@@ -2103,6 +2516,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 ## Task 37 ✅ — Implement Server-Sent Events (SSE)
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create SSE controller
   - ✅ Implement SSE connection management
@@ -2113,15 +2527,18 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 - **Requirements**: Requirement 15
 
 ### 2. From requirements.md
+
 - **Requirement 15.2**: THE NestJS_Backend SHALL provide Server-Sent Events (SSE) for one-way updates
 - **Requirement 15.3**: THE NestJS_Backend SHALL implement real-time survey response tracking
 - **Requirement 15.4**: THE NestJS_Backend SHALL support real-time analytics and metrics updates
 - **Requirement 15.5**: THE NestJS_Backend SHALL provide real-time notification delivery
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/realtime/sse.controller.ts`
 - **Interface**:
+
 ```typescript
 // SSE Endpoints
 GET /api/v1/sse/notifications
@@ -2130,6 +2547,7 @@ GET /api/v1/sse/system/status
 ```
 
 ### 4. Implementation
+
 ```typescript
 // sse.controller.ts — Req 15.2, 15.4, 15.5
 @Get('analytics/:campaignId')
@@ -2144,6 +2562,7 @@ streamAnalytics(@Param('campaignId') campaignId: string): Observable<MessageEven
 ```
 
 ### 5. Verification
+
 - [x] Req 15.2 — SSE streams one-way events to client
 - [x] Req 15.3 — response tracking streamed via SSE
 - [x] Req 15.4 — analytics polled every 5s and pushed
@@ -2154,6 +2573,7 @@ streamAnalytics(@Param('campaignId') campaignId: string): Observable<MessageEven
 ## Task 38 ✅ — Implement Multi-Channel Notification System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `notifications/` module
   - ✅ Implement notification service with channel routing
@@ -2165,12 +2585,14 @@ streamAnalytics(@Param('campaignId') campaignId: string): Observable<MessageEven
 - **Requirements**: Requirement 16
 
 ### 2. From requirements.md
+
 - **Requirement 16.1**: THE NestJS_Backend SHALL implement multi-channel notification delivery (email, push, in-app, SMS)
 - **Requirement 16.3**: THE NestJS_Backend SHALL implement notification preferences and opt-out management
 - **Requirement 16.4**: THE NestJS_Backend SHALL provide notification scheduling and batching
 - **Requirement 16.7**: THE NestJS_Backend SHALL implement notification retry logic and failure handling
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/notifications/notifications.service.ts`
   - `backend/src/notifications/channels/email.channel.ts`
@@ -2179,13 +2601,15 @@ streamAnalytics(@Param('campaignId') campaignId: string): Observable<MessageEven
   - `backend/src/notifications/channels/in-app.channel.ts`
   - `backend/src/notifications/dto/notification.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-GET  /api/v1/notifications
-POST /api/v1/notifications/send
+GET / api / v1 / notifications;
+POST / api / v1 / notifications / send;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // notifications.service.ts — Req 16.1, 16.3, 16.7
 async send(dto: SendNotificationDto): Promise<void> {
@@ -2203,6 +2627,7 @@ async send(dto: SendNotificationDto): Promise<void> {
 ```
 
 ### 5. Verification
+
 - [x] Req 16.1 — email, SMS, push, in-app channels all send
 - [x] Req 16.3 — user opt-out preferences respected
 - [x] Req 16.4 — scheduled notifications via Bull queue
@@ -2213,6 +2638,7 @@ async send(dto: SendNotificationDto): Promise<void> {
 ## Task 39 ✅ — Implement Notification Templates and Localization
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create template management service
   - ✅ Implement template rendering engine
@@ -2222,14 +2648,17 @@ async send(dto: SendNotificationDto): Promise<void> {
 - **Requirements**: Requirement 16
 
 ### 2. From requirements.md
+
 - **Requirement 16.2**: THE NestJS_Backend SHALL support notification templating and personalization
 - **Requirement 16.9**: THE NestJS_Backend SHALL support notification localization and multi-language
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/notifications/template.service.ts`
   - `backend/src/notifications/dto/notification-template.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET    /api/v1/notifications/templates
@@ -2239,6 +2668,7 @@ DELETE /api/v1/notifications/templates/:id
 ```
 
 ### 4. Implementation
+
 ```typescript
 // template.service.ts — Req 16.2, 16.9
 async render(templateId: string, locale: string, variables: Record<string, string>): Promise<string> {
@@ -2248,6 +2678,7 @@ async render(templateId: string, locale: string, variables: Record<string, strin
 ```
 
 ### 5. Verification
+
 - [x] Req 16.2 — `{{variable}}` substitution in templates
 - [x] Req 16.9 — templates stored per locale (en, km); fallback to 'en'
 
@@ -2256,6 +2687,7 @@ async render(templateId: string, locale: string, variables: Record<string, strin
 ## Task 40 ✅ — Implement File Upload and Storage System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `files/` module
   - ✅ Implement file service with upload handling
@@ -2267,6 +2699,7 @@ async render(templateId: string, locale: string, variables: Record<string, strin
 - **Requirements**: Requirement 24
 
 ### 2. From requirements.md
+
 - **Requirement 24.1**: THE NestJS_Backend SHALL implement secure file upload with validation and scanning
 - **Requirement 24.2**: THE NestJS_Backend SHALL support multiple storage backends (local, S3, CloudFlare R2)
 - **Requirement 24.3**: THE NestJS_Backend SHALL implement file type validation and size limits
@@ -2274,6 +2707,7 @@ async render(templateId: string, locale: string, variables: Record<string, strin
 - **Requirement 24.5**: THE NestJS_Backend SHALL implement file access control and permissions
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/files/files.service.ts`
   - `backend/src/files/storage/local.storage.ts`
@@ -2281,6 +2715,7 @@ async render(templateId: string, locale: string, variables: Record<string, strin
   - `backend/src/files/storage/r2.storage.ts`
   - `backend/src/files/dto/file-upload.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST /api/v1/files/upload
@@ -2291,6 +2726,7 @@ GET  /api/v1/files/temporary/:id/url
 ```
 
 ### 4. Implementation
+
 ```typescript
 // files.service.ts — Req 24.1, 24.2, 24.3, 24.4
 async upload(file: Express.Multer.File, userId: string, isTemporary = false): Promise<FileRecord> {
@@ -2305,6 +2741,7 @@ async upload(file: Express.Multer.File, userId: string, isTemporary = false): Pr
 ```
 
 ### 5. Verification
+
 - [x] Req 24.1 — file type and size validation before upload
 - [x] Req 24.2 — storage provider selected via config
 - [x] Req 24.3 — MIME type and size limits enforced
@@ -2316,6 +2753,7 @@ async upload(file: Express.Multer.File, userId: string, isTemporary = false): Pr
 ## Task 41 ✅ — Implement Bull Queue System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create `jobs/` module
   - ✅ Install and configure Bull with Redis
@@ -2328,6 +2766,7 @@ async upload(file: Express.Multer.File, userId: string, isTemporary = false): Pr
 - **Requirements**: Requirement 23
 
 ### 2. From requirements.md
+
 - **Requirement 23.1**: THE NestJS_Backend SHALL implement a Queue_System using Bull or similar
 - **Requirement 23.2**: THE NestJS_Backend SHALL support job scheduling and delayed execution
 - **Requirement 23.3**: THE NestJS_Backend SHALL implement job retry logic with exponential backoff
@@ -2336,6 +2775,7 @@ async upload(file: Express.Multer.File, userId: string, isTemporary = false): Pr
 - **Requirement 23.6**: THE NestJS_Backend SHALL implement job failure handling and dead letter queues
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/jobs/jobs.module.ts`
   - `backend/src/jobs/processors/survey-import.processor.ts`
@@ -2345,6 +2785,7 @@ async upload(file: Express.Multer.File, userId: string, isTemporary = false): Pr
   - `backend/src/jobs/dto/job-status.dto.ts`
 
 ### 4. Implementation
+
 ```typescript
 // jobs.module.ts — Req 23.1
 BullModule.registerQueue(
@@ -2364,6 +2805,7 @@ async handleImport(job: Job<ImportJobData>) {
 ```
 
 ### 5. Verification
+
 - [x] Req 23.1 — Bull queues configured with Redis
 - [x] Req 23.2 — `delay` option supports deferred execution
 - [x] Req 23.3 — exponential backoff on retry
@@ -2376,6 +2818,7 @@ async handleImport(job: Job<ImportJobData>) {
 ## Task 42 ✅ — Implement Redis Caching Layer
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install and configure Redis client
   - ✅ Create cache service with Redis integration
@@ -2386,16 +2829,19 @@ async handleImport(job: Job<ImportJobData>) {
 - **Requirements**: Requirement 18
 
 ### 2. From requirements.md
+
 - **Requirement 18.1**: THE NestJS_Backend SHALL implement Redis-based caching for frequently accessed data
 - **Requirement 18.2**: THE NestJS_Backend SHALL use cache-aside pattern with appropriate TTL values
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/cache/cache.service.ts`
   - `backend/src/common/cache/cache.module.ts`
   - `backend/src/common/interceptors/cache.interceptor.ts`
 
 ### 4. Implementation
+
 ```typescript
 // cache.service.ts — Req 18.1, 18.2
 @Injectable()
@@ -2407,7 +2853,8 @@ export class CacheService {
     return value ? JSON.parse(value) : null;
   }
 
-  async set(key: string, value: unknown, ttl: number): Promise<void> { // Req 18.2 TTL
+  async set(key: string, value: unknown, ttl: number): Promise<void> {
+    // Req 18.2 TTL
     await this.redis.setex(key, ttl, JSON.stringify(value));
   }
 
@@ -2419,6 +2866,7 @@ export class CacheService {
 ```
 
 ### 5. Verification
+
 - [x] Req 18.1 — Redis stores survey feeds, analytics, user profiles
 - [x] Req 18.2 — TTL set per data type (feeds: 60s, analytics: 300s, profiles: 3600s)
 
@@ -2427,6 +2875,7 @@ export class CacheService {
 ## Task 43 ✅ — Implement Database Query Optimization
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Add database indexes for frequently queried fields
   - ✅ Implement query optimization in repositories
@@ -2437,30 +2886,47 @@ export class CacheService {
 - **Requirements**: Requirement 18
 
 ### 2. From requirements.md
+
 - **Requirement 18.3**: THE NestJS_Backend SHALL implement query optimization with database indexes
 - **Requirement 18.4**: THE NestJS_Backend SHALL support connection pooling and database optimization
 - **Requirement 18.7**: THE NestJS_Backend SHALL implement pagination for large datasets
 - **Requirement 18.8**: THE NestJS_Backend SHALL support bulk operations for efficiency
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/prisma/schema.prisma` (indexes)
   - `backend/src/common/utils/pagination.helper.ts`
 
 ### 4. Implementation
+
 ```prisma
 // schema.prisma — Req 18.3
 model Response { @@index([survey_id, created_at]) @@index([user_id, created_at]) }
 model Campaign { @@index([advertiser_id, lifecycle_status]) @@index([lifecycle_status, deleted_at]) }
 ```
+
 ```typescript
 // pagination.helper.ts — Req 18.7
-export function paginate<T>(items: T[], total: number, pagination: PaginationDto): PaginatedResult<T> {
-  return { data: items, meta: { total_count: total, limit: pagination.limit, has_more: items.length === pagination.limit, next_cursor: items.at(-1)?.['id'] ?? null } };
+export function paginate<T>(
+  items: T[],
+  total: number,
+  pagination: PaginationDto,
+): PaginatedResult<T> {
+  return {
+    data: items,
+    meta: {
+      total_count: total,
+      limit: pagination.limit,
+      has_more: items.length === pagination.limit,
+      next_cursor: items.at(-1)?.["id"] ?? null,
+    },
+  };
 }
 ```
 
 ### 5. Verification
+
 - [x] Req 18.3 — `@@index` on high-traffic query fields
 - [x] Req 18.4 — `connection_limit` in `DATABASE_URL`
 - [x] Req 18.7 — cursor pagination on all list endpoints
@@ -2471,6 +2937,7 @@ export function paginate<T>(items: T[], total: number, pagination: PaginationDto
 ## Task 44 ✅ — Implement Rate Limiting System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install `@nestjs/throttler`
   - ✅ Configure throttler module with Redis storage
@@ -2481,21 +2948,24 @@ export function paginate<T>(items: T[], total: number, pagination: PaginationDto
 - **Requirements**: Requirement 19
 
 ### 2. From requirements.md
+
 - **Requirement 19.1**: THE NestJS_Backend SHALL implement rate limiting with different tiers based on user roles
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/guards/throttle.guard.ts`
   - `backend/src/common/guards/redis-throttler.storage.ts`
 
 ### 4. Implementation
+
 ```typescript
 // app.module.ts — Req 19.1
 ThrottlerModule.forRoot([
-  { name: 'global', ttl: 3600, limit: 1000 },       // authenticated users
-  { name: 'auth', ttl: 60, limit: 10 },             // login endpoint
-  { name: 'ai', ttl: 3600, limit: 100 },            // AI endpoints (Req 6.4)
-])
+  { name: "global", ttl: 3600, limit: 1000 }, // authenticated users
+  { name: "auth", ttl: 60, limit: 10 }, // login endpoint
+  { name: "ai", ttl: 3600, limit: 100 }, // AI endpoints (Req 6.4)
+]);
 
 // throttle.guard.ts
 @Injectable()
@@ -2507,6 +2977,7 @@ export class RoleThrottleGuard extends ThrottlerGuard {
 ```
 
 ### 5. Verification
+
 - [x] Req 19.1 — role-based rate limits applied globally and per endpoint
 - [x] `X-RateLimit-Limit`, `X-RateLimit-Remaining` headers in responses
 
@@ -2515,6 +2986,7 @@ export class RoleThrottleGuard extends ThrottlerGuard {
 ## Task 45 ✅ — Implement Security Headers and CORS
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install helmet for security headers
   - ✅ Configure CORS with environment-specific settings
@@ -2524,24 +2996,39 @@ export class RoleThrottleGuard extends ThrottlerGuard {
 - **Requirements**: Requirement 19
 
 ### 2. From requirements.md
+
 - **Requirement 19.2**: THE NestJS_Backend SHALL provide input validation and sanitization for all endpoints
 - **Requirement 19.3**: THE NestJS_Backend SHALL implement SQL injection and XSS protection
 - **Requirement 19.4**: THE NestJS_Backend SHALL support CORS configuration and security headers
 - **Requirement 19.5**: THE NestJS_Backend SHALL implement request logging and security audit trails
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/main.ts`
   - `backend/src/common/middleware/security.middleware.ts`
 
 ### 4. Implementation
+
 ```typescript
 // main.ts — Req 19.3, 19.4
-app.use(helmet({ contentSecurityPolicy: true, hsts: { maxAge: 31536000 }, frameguard: { action: 'DENY' }, noSniff: true, xssFilter: true }));
-app.enableCors({ origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000'], credentials: true });
+app.use(
+  helmet({
+    contentSecurityPolicy: true,
+    hsts: { maxAge: 31536000 },
+    frameguard: { action: "DENY" },
+    noSniff: true,
+    xssFilter: true,
+  }),
+);
+app.enableCors({
+  origin: process.env.CORS_ORIGINS?.split(",") ?? ["http://localhost:3000"],
+  credentials: true,
+});
 ```
 
 ### 5. Verification
+
 - [x] Req 19.2 — global `ValidationPipe` sanitizes all inputs
 - [x] Req 19.3 — Prisma prevents SQL injection; helmet provides XSS protection
 - [x] Req 19.4 — CORS and security headers applied on every response
@@ -2551,6 +3038,7 @@ app.enableCors({ origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localh
 ## Task 46 ✅ — Implement API Key Management
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create API key model and repository
   - ✅ Implement API key generation and validation
@@ -2561,15 +3049,18 @@ app.enableCors({ origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localh
 - **Requirements**: Requirement 19
 
 ### 2. From requirements.md
+
 - **Requirement 19.8**: THE NestJS_Backend SHALL support API key management for third-party integrations
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/guards/api-key.guard.ts`
   - `backend/src/auth/api-key.service.ts`
   - `backend/src/auth/api-key.controller.ts`
   - `backend/src/auth/dto/api-key.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST   /api/v1/integration/api-keys
@@ -2578,6 +3069,7 @@ DELETE /api/v1/integration/api-keys/:id
 ```
 
 ### 4. Implementation
+
 ```typescript
 // api-key.service.ts — Req 19.8
 async create(userId: string, dto: CreateApiKeyDto): Promise<{ key: string; record: ApiKey }> {
@@ -2595,6 +3087,7 @@ async validate(rawKey: string): Promise<ApiKey | null> {
 ```
 
 ### 5. Verification
+
 - [x] Req 19.8 — API keys created, hashed, validated; raw key returned only on creation
 
 ---
@@ -2602,6 +3095,7 @@ async validate(rawKey: string): Promise<ApiKey | null> {
 ## Task 47 ✅ — Implement Webhook System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Create webhook module
   - ✅ Implement webhook registration and management
@@ -2613,6 +3107,7 @@ async validate(rawKey: string): Promise<ApiKey | null> {
 - **Requirements**: Requirement 22
 
 ### 2. From requirements.md
+
 - **Requirement 22.1**: THE NestJS_Backend SHALL provide webhook endpoints for real-time event notifications
 - **Requirement 22.2**: THE NestJS_Backend SHALL implement webhook authentication and signature verification
 - **Requirement 22.3**: THE NestJS_Backend SHALL support webhook retry logic with exponential backoff
@@ -2620,12 +3115,14 @@ async validate(rawKey: string): Promise<ApiKey | null> {
 - **Requirement 22.6**: THE NestJS_Backend SHALL implement webhook delivery tracking and analytics
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/webhooks/webhooks.service.ts`
   - `backend/src/webhooks/webhook-delivery.service.ts`
   - `backend/src/webhooks/webhooks.controller.ts`
   - `backend/src/webhooks/dto/webhook.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 POST   /api/v1/webhooks/register
@@ -2636,6 +3133,7 @@ POST   /api/v1/webhooks/:id/test
 ```
 
 ### 4. Implementation
+
 ```typescript
 // webhook-delivery.service.ts — Req 22.1, 22.2, 22.3, 22.6
 async deliver(webhookId: string, event: string, payload: unknown): Promise<void> {
@@ -2654,6 +3152,7 @@ async deliver(webhookId: string, event: string, payload: unknown): Promise<void>
 ```
 
 ### 5. Verification
+
 - [x] Req 22.1 — HTTP POST to registered endpoint
 - [x] Req 22.2 — HMAC-SHA256 signature in header
 - [x] Req 22.3 — exponential backoff retry on failure
@@ -2665,6 +3164,7 @@ async deliver(webhookId: string, event: string, payload: unknown): Promise<void>
 ## Task 48 — Implement OAuth 2.0 for Third-Party Authorization
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Install OAuth 2.0 server dependencies
   - Implement OAuth authorization endpoints
@@ -2676,20 +3176,24 @@ async deliver(webhookId: string, event: string, payload: unknown): Promise<void>
 - **Requirements**: Requirement 22
 
 ### 2. From requirements.md
+
 - **Requirement 22.7**: THE NestJS_Backend SHALL support OAuth 2.0 for third-party application authorization
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/auth/oauth-server.service.ts`
   - `backend/src/auth/dto/oauth-client.dto.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-POST /api/v1/integration/oauth/authorize
-POST /api/v1/integration/oauth/token
+POST / api / v1 / integration / oauth / authorize;
+POST / api / v1 / integration / oauth / token;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // oauth-server.service.ts — Req 22.7
 async authorize(clientId: string, redirectUri: string, scopes: string[]): Promise<string> {
@@ -2708,6 +3212,7 @@ async exchangeCode(code: string, clientSecret: string): Promise<OAuthTokens> {
 ```
 
 ### 5. Verification
+
 - [x] Req 22.7 — authorization code flow operational; tokens issued on exchange
 
 ---
@@ -2715,6 +3220,7 @@ async exchangeCode(code: string, clientSecret: string): Promise<OAuthTokens> {
 ## Task 49 ✅ — Implement Health Check Endpoints
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install `@nestjs/terminus`
   - ✅ Create health check controller
@@ -2724,21 +3230,25 @@ async exchangeCode(code: string, clientSecret: string): Promise<OAuthTokens> {
 - **Requirements**: Requirement 20, Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 20.4**: THE NestJS_Backend SHALL provide health check endpoints for service monitoring
 - **Requirement 30.5**: THE NestJS_Backend SHALL provide comprehensive health checks and readiness probes
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/health/health.controller.ts`
   - `backend/src/health/health.module.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
-GET /api/v1/health
-GET /api/v1/admin/system/health
+GET / api / v1 / health;
+GET / api / v1 / admin / system / health;
 ```
 
 ### 4. Implementation
+
 ```typescript
 // health.controller.ts — Req 20.4, 30.5
 @Get()
@@ -2754,6 +3264,7 @@ check() {
 ```
 
 ### 5. Verification
+
 - [x] Req 20.4 — health endpoint returns status of all services
 - [x] Req 30.5 — readiness probe returns 503 when DB is unavailable
 
@@ -2762,6 +3273,7 @@ check() {
 ## Task 50 ✅ — Implement Metrics Export for Monitoring
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install metrics export dependencies
   - ✅ Create metrics service
@@ -2771,16 +3283,19 @@ check() {
 - **Requirements**: Requirement 20, Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 20.7**: THE NestJS_Backend SHALL provide API usage analytics and metrics
 - **Requirement 30.7**: THE NestJS_Backend SHALL support metrics export for monitoring systems (Prometheus, DataDog)
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/monitoring/metrics.service.ts`
   - `backend/src/monitoring/metrics.controller.ts`
   - `backend/src/monitoring/monitoring.module.ts`
 
 ### 4. Implementation
+
 ```typescript
 // metrics.service.ts — Req 20.7, 30.7
 import { Counter, Histogram, register } from 'prom-client';
@@ -2796,6 +3311,7 @@ async getMetrics(@Res() res: Response) {
 ```
 
 ### 5. Verification
+
 - [x] Req 20.7 — request count, latency, error rate tracked
 - [x] Req 30.7 — `/metrics` endpoint returns Prometheus format
 
@@ -2804,6 +3320,7 @@ async getMetrics(@Res() res: Response) {
 ## Task 51 ✅ — Implement Distributed Tracing
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Install OpenTelemetry dependencies
   - ✅ Configure tracing provider
@@ -2813,15 +3330,18 @@ async getMetrics(@Res() res: Response) {
 - **Requirements**: Requirement 20
 
 ### 2. From requirements.md
+
 - **Requirement 20.6**: THE NestJS_Backend SHALL support distributed tracing and performance monitoring
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/tracing/tracing.service.ts`
   - `backend/src/common/interceptors/tracing.interceptor.ts`
   - `backend/src/common/tracing/tracing.module.ts`
 
 ### 4. Implementation
+
 ```typescript
 // tracing.service.ts — Req 20.6
 import { trace, SpanStatusCode } from '@opentelemetry/api';
@@ -2841,6 +3361,7 @@ async traceOperation<T>(name: string, fn: () => Promise<T>): Promise<T> {
 ```
 
 ### 5. Verification
+
 - [x] Req 20.6 — spans created for DB queries, AI calls, payment operations
 
 ---
@@ -2848,6 +3369,7 @@ async traceOperation<T>(name: string, fn: () => Promise<T>): Promise<T> {
 ## Task 52 ✅ — Set Up Unit Testing Framework
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - ✅ Configure Jest for unit testing
   - ✅ Create test utilities and helpers
@@ -2859,6 +3381,7 @@ async traceOperation<T>(name: string, fn: () => Promise<T>): Promise<T> {
 - **Requirements**: Requirement 25
 
 ### 2. From requirements.md
+
 - **Requirement 25.1**: THE NestJS_Backend SHALL implement unit tests for all service methods with >90% coverage
 - **Requirement 25.4**: THE NestJS_Backend SHALL support test data factories and fixtures
 - **Requirement 25.6**: THE NestJS_Backend SHALL provide test environment configuration and isolation
@@ -2866,6 +3389,7 @@ async traceOperation<T>(name: string, fn: () => Promise<T>): Promise<T> {
 - **Requirement 25.9**: THE NestJS_Backend SHALL provide test reporting and coverage analysis
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/jest.config.js`
   - `backend/test/setup.ts`
@@ -2875,24 +3399,33 @@ async traceOperation<T>(name: string, fn: () => Promise<T>): Promise<T> {
   - `backend/test/factories/campaign.factory.ts`
 
 ### 4. Implementation
+
 ```typescript
 // test/factories/user.factory.ts — Req 25.4
 export const createUser = (overrides: Partial<User> = {}): User => ({
-  id: uuidv4(), email: `user+${Date.now()}@test.com`, role: Role.SURVEY_TAKER, ...overrides,
+  id: uuidv4(),
+  email: `user+${Date.now()}@test.com`,
+  role: Role.SURVEY_TAKER,
+  ...overrides,
 });
 
 // Example unit test — Req 25.1
-describe('WalletService.creditPoints', () => {
-  it('credits wallet and creates transaction', async () => {
+describe("WalletService.creditPoints", () => {
+  it("credits wallet and creates transaction", async () => {
     const user = createUser();
     prismaMock.wallet.update.mockResolvedValue({ balance: 10 });
-    await walletService.creditPoints(user.id, 'survey-1');
-    expect(prismaMock.transaction.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ user_id: user.id }) }));
+    await walletService.creditPoints(user.id, "survey-1");
+    expect(prismaMock.transaction.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ user_id: user.id }),
+      }),
+    );
   });
 });
 ```
 
 ### 5. Verification
+
 - [x] Req 25.1 — Jest coverage report targets >90%
 - [x] Req 25.4 — factories generate valid test data
 - [x] Req 25.6 — separate test DB via `TEST_DATABASE_URL`
@@ -2904,6 +3437,7 @@ describe('WalletService.creditPoints', () => {
 ## Task 53 — Implement Property-Based Testing
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Install fast-check library
   - Create round-trip property tests for Response, Campaign, AI Prompt, Payment parsers
@@ -2913,6 +3447,7 @@ describe('WalletService.creditPoints', () => {
 - **Requirements**: Requirement 25
 
 ### 2. From requirements.md
+
 - **Requirement 25.10**: THE NestJS_Backend SHALL implement property-based testing for critical business logic
 - **Requirement 26.5**: FOR ALL valid Response objects, parsing then printing then parsing SHALL produce an equivalent object
 - **Requirement 27.5**: FOR ALL valid Campaign objects, parsing then printing then parsing SHALL produce an equivalent object
@@ -2920,6 +3455,7 @@ describe('WalletService.creditPoints', () => {
 - **Requirement 29.5**: FOR ALL valid Transaction objects, parsing then printing then parsing SHALL produce an equivalent object
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/test/property/response.property-spec.ts`
   - `backend/test/property/campaign.property-spec.ts`
@@ -2927,24 +3463,36 @@ describe('WalletService.creditPoints', () => {
   - `backend/test/property/payment.property-spec.ts`
 
 ### 4. Implementation
+
 ```typescript
 // response.property-spec.ts — Req 26.5, 25.10
-import fc from 'fast-check';
+import fc from "fast-check";
 
-it('round-trip: parse(print(parse(raw))) === parse(raw)', () => {
-  fc.assert(fc.property(
-    fc.record({ response_id: fc.uuid(), survey_id: fc.uuid(), user_id: fc.uuid(), timestamp: fc.date(), answers: fc.object(), behavioral_data: fc.object(), quality_metrics: fc.object() }),
-    (raw) => {
-      const parsed1 = ResponseParser.parse(raw);
-      const printed = ResponseParser.print(parsed1);
-      const parsed2 = ResponseParser.parse(JSON.parse(printed));
-      expect(parsed2).toEqual(parsed1); // Req 26.5
-    }
-  ));
+it("round-trip: parse(print(parse(raw))) === parse(raw)", () => {
+  fc.assert(
+    fc.property(
+      fc.record({
+        response_id: fc.uuid(),
+        survey_id: fc.uuid(),
+        user_id: fc.uuid(),
+        timestamp: fc.date(),
+        answers: fc.object(),
+        behavioral_data: fc.object(),
+        quality_metrics: fc.object(),
+      }),
+      (raw) => {
+        const parsed1 = ResponseParser.parse(raw);
+        const printed = ResponseParser.print(parsed1);
+        const parsed2 = ResponseParser.parse(JSON.parse(printed));
+        expect(parsed2).toEqual(parsed1); // Req 26.5
+      },
+    ),
+  );
 });
 ```
 
 ### 5. Verification
+
 - [x] Req 25.10 — fast-check generates hundreds of random valid inputs
 - [x] Req 26.5 — Response round-trip property holds for all valid inputs
 - [x] Req 27.5 — Campaign round-trip property holds
@@ -2956,6 +3504,7 @@ it('round-trip: parse(print(parse(raw))) === parse(raw)', () => {
 ## Task 54 — Create Docker Configuration
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create Dockerfile with multi-stage build
   - Add .dockerignore file
@@ -2965,16 +3514,19 @@ it('round-trip: parse(print(parse(raw))) === parse(raw)', () => {
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.1**: THE NestJS_Backend SHALL support containerized deployment using Docker
 - **Requirement 30.2**: THE NestJS_Backend SHALL provide environment-specific configuration management
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/Dockerfile`
   - `backend/.dockerignore`
   - `backend/docker-compose.yml`
 
 ### 4. Implementation
+
 ```dockerfile
 # Dockerfile — Req 30.1 multi-stage build
 FROM node:20-alpine AS builder
@@ -2992,15 +3544,32 @@ COPY --from=builder /app/prisma ./prisma
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:3000/health || exit 1
 CMD ["node", "dist/main"]
 ```
+
 ```yaml
 # docker-compose.yml — Req 30.2 local dev
 services:
-  api: { build: ., ports: ['3000:3000'], environment: { DATABASE_URL: postgresql://postgres:postgres@db:5432/vibe_survey, REDIS_HOST: redis }, depends_on: [db, redis] }
-  db: { image: postgres:16-alpine, environment: { POSTGRES_DB: vibe_survey, POSTGRES_PASSWORD: postgres }, volumes: ['pgdata:/var/lib/postgresql/data'] }
+  api:
+    {
+      build: .,
+      ports: ["3000:3000"],
+      environment:
+        {
+          DATABASE_URL: postgresql://postgres:postgres@db:5432/vibe_survey,
+          REDIS_HOST: redis,
+        },
+      depends_on: [db, redis],
+    }
+  db:
+    {
+      image: postgres:16-alpine,
+      environment: { POSTGRES_DB: vibe_survey, POSTGRES_PASSWORD: postgres },
+      volumes: ["pgdata:/var/lib/postgresql/data"],
+    }
   redis: { image: redis:7-alpine }
 ```
 
 ### 5. Verification
+
 - [x] Req 30.1 — `docker build` produces working container
 - [x] Req 30.2 — `.env` file separate per environment
 
@@ -3009,6 +3578,7 @@ services:
 ## Task 55 — Implement Database Migration Scripts
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create migration scripts for all schema changes
   - Implement migration rollback procedures
@@ -3017,14 +3587,17 @@ services:
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.3**: THE NestJS_Backend SHALL implement database migration scripts with rollback capabilities
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/prisma/migrations/`
   - `backend/prisma/seed.ts`
 
 ### 4. Implementation
+
 ```bash
 # Apply migrations — Req 30.3
 npx prisma migrate dev --name init
@@ -3033,14 +3606,22 @@ npx prisma migrate deploy    # production
 # Rollback
 npx prisma migrate resolve --rolled-back <migration_name>
 ```
+
 ```typescript
 // prisma/seed.ts
 async function seed() {
-  await prisma.user.create({ data: { email: 'admin@vibesurvey.com', role: Role.ADMIN, password_hash: await bcrypt.hash('admin123', 12) } });
+  await prisma.user.create({
+    data: {
+      email: "admin@vibesurvey.com",
+      role: Role.ADMIN,
+      password_hash: await bcrypt.hash("admin123", 12),
+    },
+  });
 }
 ```
 
 ### 5. Verification
+
 - [x] Req 30.3 — `prisma migrate` creates versioned migration files; rollback via `migrate resolve`
 
 ---
@@ -3048,6 +3629,7 @@ async function seed() {
 ## Task 56 — Set Up CI/CD Pipeline
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create CI/CD configuration (GitHub Actions)
   - Implement automated testing in pipeline
@@ -3057,13 +3639,16 @@ async function seed() {
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.10**: THE NestJS_Backend SHALL support CI/CD pipeline integration with automated testing and deployment
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/.github/workflows/ci-cd.yml`
 
 ### 4. Implementation
+
 ```yaml
 # .github/workflows/ci-cd.yml — Req 30.10
 name: CI/CD
@@ -3072,12 +3657,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      postgres: { image: postgres:16, env: { POSTGRES_DB: vibe_test, POSTGRES_PASSWORD: postgres }, ports: ['5432:5432'] }
-      redis: { image: redis:7, ports: ['6379:6379'] }
+      postgres:
+        {
+          image: postgres:16,
+          env: { POSTGRES_DB: vibe_test, POSTGRES_PASSWORD: postgres },
+          ports: ["5432:5432"],
+        }
+      redis: { image: redis:7, ports: ["6379:6379"] }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
+        with: { node-version: "20", cache: "npm" }
       - run: npm ci
       - run: npm run lint
       - run: npx prisma migrate deploy
@@ -3086,6 +3676,7 @@ jobs:
 ```
 
 ### 5. Verification
+
 - [x] Req 30.10 — pipeline runs lint → test → build on every push
 
 ---
@@ -3093,6 +3684,7 @@ jobs:
 ## Task 57 — Implement Graceful Shutdown and Zero-Downtime Deployment
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Implement graceful shutdown hooks
   - Add connection draining for active requests
@@ -3102,18 +3694,21 @@ jobs:
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.8**: THE NestJS_Backend SHALL implement graceful shutdown and zero-downtime deployments
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/main.ts`
 
 ### 4. Implementation
+
 ```typescript
 // main.ts — Req 30.8
 app.enableShutdownHooks();
-process.on('SIGTERM', async () => {
-  logger.log('SIGTERM received — draining connections...');
+process.on("SIGTERM", async () => {
+  logger.log("SIGTERM received — draining connections...");
   await app.close(); // closes HTTP server, waits for in-flight requests
   await prismaService.$disconnect();
   process.exit(0);
@@ -3121,6 +3716,7 @@ process.on('SIGTERM', async () => {
 ```
 
 ### 5. Verification
+
 - [x] Req 30.8 — `SIGTERM` handled; server drains before exit; rolling deploy supported
 
 ---
@@ -3128,6 +3724,7 @@ process.on('SIGTERM', async () => {
 ## Task 58 — Create API Documentation
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Install `@nestjs/swagger`
   - Add Swagger decorators to all controllers
@@ -3138,25 +3735,31 @@ process.on('SIGTERM', async () => {
 - **Requirements**: Requirement 22
 
 ### 2. From requirements.md
+
 - **Requirement 22.10**: THE NestJS_Backend SHALL support API client SDK generation and documentation
 
 ### 3. From design.md
+
 - **Files**: All controller files + `backend/src/main.ts`
 
 ### 4. Implementation
+
 ```typescript
 // main.ts — Req 22.10
 const config = new DocumentBuilder()
-  .setTitle('Vibe Survey API').setVersion('1.0')
-  .addBearerAuth().addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' }, 'api-key')
+  .setTitle("Vibe Survey API")
+  .setVersion("1.0")
+  .addBearerAuth()
+  .addApiKey({ type: "apiKey", name: "X-API-Key", in: "header" }, "api-key")
   .build();
 const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('api/docs', app, document);
+SwaggerModule.setup("api/docs", app, document);
 // Export OpenAPI spec
-writeFileSync('./openapi.json', JSON.stringify(document));
+writeFileSync("./openapi.json", JSON.stringify(document));
 ```
 
 ### 5. Verification
+
 - [x] Req 22.10 — Swagger UI at `/api/docs`; `openapi.json` generated for SDK tools
 
 ---
@@ -3164,6 +3767,7 @@ writeFileSync('./openapi.json', JSON.stringify(document));
 ## Task 59 — Implement Audit Trail System
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create audit log model and repository
   - Implement audit logging interceptor
@@ -3174,13 +3778,16 @@ writeFileSync('./openapi.json', JSON.stringify(document));
 - **Requirements**: Requirement 14
 
 ### 2. From requirements.md
+
 - **Requirement 14.5**: THE NestJS_Backend SHALL provide audit trail and compliance reporting
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/audit/audit.service.ts`
   - `backend/src/common/audit/audit.interceptor.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET /api/v1/admin/audit-logs
@@ -3189,6 +3796,7 @@ GET /api/v1/admin/audit-logs/search
 ```
 
 ### 4. Implementation
+
 ```typescript
 // audit.service.ts — Req 14.5
 async log(entry: CreateAuditLogDto): Promise<void> {
@@ -3210,6 +3818,7 @@ export class AuditInterceptor implements NestInterceptor {
 ```
 
 ### 5. Verification
+
 - [x] Req 14.5 — all state-changing requests logged in audit trail
 
 ---
@@ -3217,6 +3826,7 @@ export class AuditInterceptor implements NestInterceptor {
 ## Task 60 — Implement Feature Toggles
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create feature toggle service
   - Implement feature flag storage in database
@@ -3226,13 +3836,16 @@ export class AuditInterceptor implements NestInterceptor {
 - **Requirements**: Requirement 14
 
 ### 2. From requirements.md
+
 - **Requirement 14.6**: THE NestJS_Backend SHALL implement system configuration and feature toggles
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/src/common/feature-toggles/feature-toggle.service.ts`
   - `backend/src/common/guards/feature-toggle.guard.ts`
 - **Interface**:
+
 ```typescript
 // Endpoints
 GET /api/v1/admin/config/features
@@ -3240,6 +3853,7 @@ PUT /api/v1/admin/config/features/:feature
 ```
 
 ### 4. Implementation
+
 ```typescript
 // feature-toggle.service.ts — Req 14.6
 async isEnabled(featureName: string, userId?: string): Promise<boolean> {
@@ -3251,6 +3865,7 @@ async isEnabled(featureName: string, userId?: string): Promise<boolean> {
 ```
 
 ### 5. Verification
+
 - [x] Req 14.6 — features toggleable without deployment; percentage rollouts supported
 
 ---
@@ -3258,6 +3873,7 @@ async isEnabled(featureName: string, userId?: string): Promise<boolean> {
 ## Task 61 — Implement Data Backup and Recovery
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Create database backup scripts
   - Implement automated backup scheduling
@@ -3268,15 +3884,18 @@ async isEnabled(featureName: string, userId?: string): Promise<boolean> {
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.9**: THE NestJS_Backend SHALL provide backup and disaster recovery procedures
 
 ### 3. From design.md
+
 - **Files**:
   - `backend/scripts/backup.sh`
   - `backend/scripts/restore.sh`
   - `backend/docs/disaster-recovery.md`
 
 ### 4. Implementation
+
 ```bash
 # scripts/backup.sh — Req 30.9
 #!/bin/bash
@@ -3289,6 +3908,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 ```
 
 ### 5. Verification
+
 - [x] Req 30.9 — daily backups to S3; restore script verifies data integrity
 
 ---
@@ -3296,6 +3916,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 ## Task 62 — Implement Load Balancing and Horizontal Scaling
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Configure stateless application design
   - Implement session storage in Redis
@@ -3305,12 +3926,15 @@ echo "Backup completed: ${BACKUP_FILE}"
 - **Requirements**: Requirement 30
 
 ### 2. From requirements.md
+
 - **Requirement 30.4**: THE NestJS_Backend SHALL support horizontal scaling with load balancing
 
 ### 3. From design.md
+
 - **Pattern**: Stateless API (no server-side sessions); JWT + Redis for state; multiple instances behind load balancer
 
 ### 4. Implementation
+
 ```typescript
 // Stateless design already enforced — Req 30.4
 // JWT stored in httpOnly cookies (Task 7)
@@ -3321,6 +3945,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 ```
 
 ### 5. Verification
+
 - [x] Req 30.4 — no server-side session; all state in Redis or DB; any instance handles any request
 
 ---
@@ -3328,6 +3953,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 ## Task 63 — Implement All API Routes According to Unified API Specification
 
 ### 1. From tasks.md
+
 - **Sub-steps**:
   - Ensure all 215 API endpoints match the unified API routes specification exactly
   - Implement response format compliance (`success`, `data`, `meta` fields)
@@ -3338,6 +3964,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 - **Requirements**: All Requirements
 
 ### 2. From requirements.md
+
 - **Requirement 1.3**: Controller_Layer, Service_Layer, Repository_Layer separation
 - **Requirement 18.7**: Pagination for large datasets
 - **Requirement 19.1**: Rate limiting headers
@@ -3346,9 +3973,11 @@ echo "Backup completed: ${BACKUP_FILE}"
 - **Requirement 20.2**: Appropriate HTTP status codes
 
 ### 3. From design.md
+
 - **Pattern**: Global prefix `/api/v1/`; `TransformInterceptor` wraps all responses; `HttpExceptionFilter` standardizes errors
 - **Files**: All controller files; `backend/src/main.ts`
 - **Interface**:
+
 ```typescript
 // Standardized success response
 { "success": true, "data": { ... }, "meta": { "timestamp": "...", "pagination": { "has_more": false, "next_cursor": null, "total_count": 100, "limit": 20 } } }
@@ -3358,6 +3987,7 @@ echo "Backup completed: ${BACKUP_FILE}"
 ```
 
 ### 4. Implementation
+
 ```typescript
 // main.ts — API versioning
 app.setGlobalPrefix('api/v1'); // all routes prefixed
@@ -3373,6 +4003,7 @@ findAll(
 ```
 
 ### 5. Verification
+
 - [x] All 215 endpoints covered across Tasks 7–62
 - [x] Req 20.1 — `TransformInterceptor` wraps every success response
 - [x] Req 20.2 — `HttpExceptionFilter` returns correct HTTP codes

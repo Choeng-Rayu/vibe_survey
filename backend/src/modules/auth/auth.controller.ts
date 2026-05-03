@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Get, UseGuards, Req, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  Query,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { MfaService } from './mfa.service';
@@ -63,14 +72,14 @@ export class AuthController {
 
   // Google OAuth endpoints
   @Public()
-  @Get('google')
+  @Get('oauth/google')
   @UseGuards(AuthGuard('google'))
   async googleLogin() {
     // Initiates Google OAuth flow; Passport handles redirect
   }
 
   @Public()
-  @Get('google/callback')
+  @Get('oauth/google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request) {
     const user = req.user as any;
@@ -78,9 +87,20 @@ export class AuthController {
     return { user: { id: user.id, email: user.email, role: user.role }, ...tokens };
   }
 
+  @Public()
+  @Post('oauth/callback')
+  async oauthCallback(@Req() req: Request) {
+    const user = req.user as any;
+    if (!user) {
+      throw new UnauthorizedException('No OAuth user info');
+    }
+    const tokens = await this.authService.issueTokens(user.id, user.email, user.role);
+    return { user: { id: user.id, email: user.email, role: user.role }, ...tokens };
+  }
+
   // Telegram OAuth endpoint (via Telegram Login widget)
   @Public()
-  @Get('telegram')
+  @Get('oauth/telegram')
   async telegramLogin(@Query() query: Record<string, string>) {
     const user = await this.authService.validateTelegramLogin(query);
     const tokens = await this.authService.issueTokens(user.id, user.email, user.role);

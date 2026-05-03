@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import * as XLSX from 'xlsx';
-const PDFDocument = require('pdfkit');
+import PDFDocument from 'pdfkit';
 
 // Requirement 7: Survey import/export in multiple formats
 @Injectable()

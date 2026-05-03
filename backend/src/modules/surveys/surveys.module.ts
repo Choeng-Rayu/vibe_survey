@@ -8,14 +8,16 @@ import { TemplateService } from './template.service';
 import { QuestionBankService } from './question-bank.service';
 import { SurveyImportExportService } from './survey-import-export.service';
 import { SurveyFeedService } from './survey-feed.service';
+import { SurveyFlowDiagramService } from './survey-flow-diagram.service';
 import { ResponseService } from './response.service';
 import { ResponseRepository } from './response.repository';
 import { DatabaseModule } from '../../database/database.module';
 import { FraudDetectionModule } from '../fraud-detection/fraud-detection.module';
 import { PaymentsModule } from '../payments/payments.module';
+import { CacheModule } from '../../common/cache/cache.module';
 
 @Module({
-  imports: [DatabaseModule, FraudDetectionModule, PaymentsModule],
+  imports: [DatabaseModule, FraudDetectionModule, PaymentsModule, CacheModule],
   controllers: [SurveysController],
   providers: [
     SurveysService,
@@ -26,6 +28,7 @@ import { PaymentsModule } from '../payments/payments.module';
     QuestionBankService,
     SurveyImportExportService,
     SurveyFeedService,
+    SurveyFlowDiagramService,
     ResponseService,
     ResponseRepository,
   ],

@@ -21,10 +21,12 @@ import { TemplateService } from './template.service';
 import { QuestionBankService } from './question-bank.service';
 import { SurveyImportExportService } from './survey-import-export.service';
 import { SurveyFeedService } from './survey-feed.service';
+import { SurveyFlowDiagramService } from './survey-flow-diagram.service';
 import { ResponseService } from './response.service';
 import { CreateSurveyDto, UpdateSurveyDto } from './dto/survey.dto';
 import { CreateTemplateDto, CreateQuestionBankDto } from './dto/template.dto';
 import { SurveyFeedQueryDto } from './dto/survey-feed.dto';
+import { FlowDiagramOptionsDto } from './dto/flow-diagram-options.dto';
 import { SubmitResponseDto, AutoSaveDto, StartSurveyDto } from './dto/survey-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -40,6 +42,7 @@ export class SurveysController {
     private readonly questionBankService: QuestionBankService,
     private readonly importExportService: SurveyImportExportService,
     private readonly feedService: SurveyFeedService,
+    private readonly flowDiagramService: SurveyFlowDiagramService,
     private readonly responseService: ResponseService,
   ) {}
 
@@ -56,15 +59,6 @@ export class SurveysController {
   @Get()
   findAll(@CurrentUser('userId') userId: string, @CurrentUser('role') role: string) {
     return this.surveysService.findAll(userId, role);
-  }
-
-  @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @CurrentUser('userId') userId: string,
-    @CurrentUser('role') role: string,
-  ) {
-    return this.surveysService.findOne(id, userId, role);
   }
 
   @Put(':id')
@@ -254,6 +248,11 @@ export class SurveysController {
     return this.feedService.checkEligibility(userId, campaignId);
   }
 
+  @Get(':id/flow-diagram')
+  getFlowDiagram(@Param('id') id: string, @Query() options: FlowDiagramOptionsDto) {
+    return this.flowDiagramService.generate(id, options);
+  }
+
   // Requirement 10.7: Survey completion and submission
   @Post(':id/start')
   startSurvey(
@@ -296,5 +295,14 @@ export class SurveysController {
     @Body() dto: SubmitResponseDto,
   ) {
     return this.responseService.submitResponse(userId, { ...dto, survey_id: surveyId });
+  }
+
+  @Get(':id')
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
+    return this.surveysService.findOne(id, userId, role);
   }
 }
