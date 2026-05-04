@@ -18,7 +18,7 @@ RUN npm ci
 COPY . .
 
 # Build the NestJS application
-RUN npm run build
+RUN npx prisma generate && npm run build
 
 # -----------------------------------------------------------------------------
 # Stage 2: Production
