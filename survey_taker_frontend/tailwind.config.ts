@@ -2,9 +2,9 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -21,6 +21,9 @@ const config: Config = {
         'text-primary': '#1C1C1A',
         'text-muted': '#6B6860',
         'accent': '#C4956A',
+      },
+      textColor: {
+        'sage-600': '#6A8C78',
       },
       fontFamily: {
         cormorant: ['Cormorant Garamond', 'serif'],
