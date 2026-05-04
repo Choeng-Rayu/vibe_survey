@@ -23,7 +23,7 @@ function createStarterQuestions(): Question[] {
       id: generateId(),
       order: 1,
       questionText: "Which of our services did you use?",
-      questionType: "checkbox",
+      questionType: "multiple-choice",
       required: true,
       options: [
         { id: generateId(), text: "Job Placement" },
@@ -35,15 +35,6 @@ function createStarterQuestions(): Question[] {
     {
       id: generateId(),
       order: 2,
-      questionText: "How likely are you to recommend our company to others?",
-      questionType: "nps",
-      required: true,
-      minLabel: "Not likely",
-      maxLabel: "Extremely likely",
-    },
-    {
-      id: generateId(),
-      order: 3,
       questionText: "Please share any additional comments or suggestions.",
       questionType: "long-text",
       required: false,

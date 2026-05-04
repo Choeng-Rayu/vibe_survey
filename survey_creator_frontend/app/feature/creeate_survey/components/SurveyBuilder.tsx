@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
+import { arrayMove } from "@dnd-kit/sortable";
 import { generateId } from "@/app/utils/id-generator";
 import type { Question, QuestionType } from "../types/question";
 import type { Survey } from "../types/survey";
 import QuestionList from "./QuestionList";
 import BuilderToolbar from "./BuilderToolbar";
+import { DndProvider } from "../context/DndContext";
 
 interface SurveyBuilderProps {
   survey: Survey;
@@ -22,7 +24,6 @@ function createQuestion(questionType: QuestionType, order: number): Question {
   if (
     questionType === "single-choice" ||
     questionType === "multiple-choice" ||
-    questionType === "checkbox" ||
     questionType === "image-choice" ||
     questionType === "ranking"
   ) {
@@ -68,6 +69,14 @@ function createQuestion(questionType: QuestionType, order: number): Question {
     };
   }
 
+  if (questionType === "captcha") {
+    return {
+      ...baseQuestion,
+      questionText: "Verify you're human",
+      required: true,
+    };
+  }
+
   return baseQuestion;
 }
 
@@ -78,18 +87,23 @@ export default function SurveyBuilder({
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     null,
   );
-  const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(
-    null,
-  );
   const [isElementDrawerOpen, setIsElementDrawerOpen] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-
-  const selectedQuestion =
-    survey.questions.find((question) => question.id === selectedQuestionId) ||
-    null;
+  const [responses, setResponses] = useState<Record<string, unknown>>({});
 
   const handleAddQuestion = useCallback(
     (questionType: QuestionType) => {
+      // Prevent adding multiple captchas
+      if (questionType === "captcha") {
+        const captchaExists = survey.questions.some(
+          (q) => q.questionType === "captcha",
+        );
+        if (captchaExists) {
+          alert("Only one reCAPTCHA element can be added to a survey.");
+          return;
+        }
+      }
+
       const newQuestion = createQuestion(questionType, survey.questions.length);
       onSurveyChange({
         ...survey,
@@ -160,57 +174,17 @@ export default function SurveyBuilder({
   );
 
   const handleReorderQuestions = useCallback(
-    (reorderedQuestions: Question[]) => {
+    (oldIndex: number, newIndex: number) => {
+      const newQuestions = arrayMove(survey.questions, oldIndex, newIndex);
       onSurveyChange({
         ...survey,
-        questions: reorderedQuestions.map((question, index) => ({
+        questions: newQuestions.map((question, index) => ({
           ...question,
           order: index,
         })),
       });
     },
     [survey, onSurveyChange],
-  );
-
-  const handleDragStart = useCallback((questionId: string) => {
-    setDraggedQuestionId(questionId);
-  }, []);
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedQuestionId(null);
-  }, []);
-
-  const handleDropQuestion = useCallback(
-    (targetIndex: number) => {
-      if (!draggedQuestionId || isPreviewMode) {
-        return;
-      }
-
-      const draggedQuestion = survey.questions.find(
-        (question) => question.id === draggedQuestionId,
-      );
-      if (!draggedQuestion) {
-        return;
-      }
-
-      const filteredQuestions = survey.questions.filter(
-        (question) => question.id !== draggedQuestionId,
-      );
-      const reorderedQuestions = [
-        ...filteredQuestions.slice(0, targetIndex),
-        draggedQuestion,
-        ...filteredQuestions.slice(targetIndex),
-      ];
-
-      handleReorderQuestions(reorderedQuestions);
-      setDraggedQuestionId(null);
-    },
-    [
-      survey.questions,
-      draggedQuestionId,
-      handleReorderQuestions,
-      isPreviewMode,
-    ],
   );
 
   // Classname helpers: extract commonly toggled class strings into variables
@@ -348,18 +322,50 @@ export default function SurveyBuilder({
 
                   <div className="bg-[rgba(250,247,242,0.88)] px-4 py-5 sm:px-8 sm:py-8">
                     {survey.questions.length > 0 ? (
-                      <QuestionList
-                        questions={survey.questions}
-                        selectedQuestionId={selectedQuestionId}
-                        draggedQuestionId={draggedQuestionId}
-                        isPreviewMode={isPreviewMode}
-                        onSelectQuestion={setSelectedQuestionId}
-                        onDeleteQuestion={handleDeleteQuestion}
-                        onDuplicateQuestion={handleDuplicateQuestion}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onDrop={handleDropQuestion}
-                      />
+                      <>
+                        <DndProvider
+                          onReorder={handleReorderQuestions}
+                          isPreviewMode={isPreviewMode}
+                        >
+                          <QuestionList
+                            questions={survey.questions}
+                            selectedQuestionId={selectedQuestionId}
+                            isPreviewMode={isPreviewMode}
+                            onSelectQuestion={setSelectedQuestionId}
+                            onDeleteQuestion={handleDeleteQuestion}
+                            onDuplicateQuestion={handleDuplicateQuestion}
+                            onUpdateQuestion={handleUpdateQuestion}
+                            responses={responses}
+                            onResponseChange={(questionId, value) => {
+                              setResponses((prev) => ({
+                                ...prev,
+                                [questionId]: value,
+                              }));
+                            }}
+                          />
+                        </DndProvider>
+                        <div className="mt-8 flex items-center justify-center">
+                          <button
+                            type="button"
+                            disabled={!isPreviewMode}
+                            onClick={() => {
+                              if (isPreviewMode) {
+                                alert(
+                                  `Form submitted! Responses:\n${JSON.stringify(
+                                    responses,
+                                    null,
+                                    2,
+                                  )}`,
+                                );
+                                setResponses({});
+                              }
+                            }}
+                            className="rounded-full bg-[#7C9E8A] px-8 py-3 text-base font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <div className="rounded-[24px] border border-dashed border-[rgba(124,158,138,0.28)] bg-[rgba(124,158,138,0.06)] px-6 py-14 text-center">
                         <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted)]">
@@ -378,43 +384,6 @@ export default function SurveyBuilder({
                 </div>
               </div>
             </section>
-
-            {/* <aside className="hidden w-full max-w-[360px] xl:block">
-              <div className="space-y-5 sticky top-6">
-                <div className="rounded-[24px] border border-[var(--border)] bg-[rgba(250,247,242,0.95)] p-5 shadow-[0_10px_28px_rgba(28,28,26,0.04)]">
-                  <p className="text-xs uppercase tracking-[0.28em] text-[var(--muted)]">
-                    Assistant
-                  </p>
-                  <h3 className="mt-2 text-lg font-medium text-[var(--text)]">
-                    Hi, 12.5. I&apos;m Podo, an AI Agent.
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Use quick actions to test the survey or adjust the thank-you
-                    experience.
-                  </p>
-                  <div className="mt-4 space-y-3">
-                    <button className="w-full rounded-full border border-[var(--border)] bg-[rgba(242,237,229,0.92)] px-4 py-3 text-sm font-medium text-[var(--text)] transition-colors hover:border-[rgba(124,158,138,0.32)] hover:bg-[rgba(124,158,138,0.08)]">
-                      Make a test submission
-                    </button>
-                    <button className="w-full rounded-full border border-[var(--border)] bg-[rgba(242,237,229,0.92)] px-4 py-3 text-sm font-medium text-[var(--text)] transition-colors hover:border-[rgba(124,158,138,0.32)] hover:bg-[rgba(124,158,138,0.08)]">
-                      Customize thank you page
-                    </button>
-                  </div>
-                </div>
-
-                {selectedQuestion ? (
-                  <QuestionEditor
-                    question={selectedQuestion}
-                    onUpdateQuestion={handleUpdateQuestion}
-                  />
-                ) : (
-                  <div className="rounded-[24px] border border-[var(--border)] bg-[rgba(250,247,242,0.95)] p-5 text-sm leading-6 text-[var(--muted)] shadow-[0_10px_28px_rgba(28,28,26,0.04)]">
-                    Select a question on the canvas to edit its label, options,
-                    and validation settings.
-                  </div>
-                )}
-              </div>
-            </aside> */}
           </main>
         </div>
       </div>

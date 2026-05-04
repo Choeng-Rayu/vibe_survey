@@ -13,24 +13,22 @@ const questionTypeCategories: Record<string, QuestionType[]> = {
   Basic: [
     "single-choice",
     "multiple-choice",
-    "checkbox",
     "yes-no",
     "short-text",
     "long-text",
   ],
-  Rating: ["rating-scale-5", "rating-scale-10", "nps", "likert"],
+  Rating: ["rating-scale-5", "rating-scale-10", "likert"],
   Advanced: ["image-choice", "matrix", "ranking", "slider", "date-time"],
+  Security: ["captcha"],
 };
 
 const questionTypeIcons: Record<QuestionType, string> = {
   "single-choice": "◉",
   "multiple-choice": "☑",
-  checkbox: "☐",
   "short-text": "T",
   "long-text": "¶",
   "rating-scale-5": "★",
   "rating-scale-10": "✦",
-  nps: "N",
   likert: "≋",
   "image-choice": "▣",
   matrix: "▦",
@@ -38,17 +36,16 @@ const questionTypeIcons: Record<QuestionType, string> = {
   ranking: "⇅",
   slider: "—",
   "date-time": "◷",
+  captcha: "🔒",
 };
 
 const questionTypeLabels: Record<QuestionType, string> = {
   "single-choice": "Single choice",
   "multiple-choice": "Multiple choice",
-  checkbox: "Checkboxes",
   "short-text": "Short text",
   "long-text": "Long text",
   "rating-scale-5": "5-point rating",
   "rating-scale-10": "10-point rating",
-  nps: "Net Promoter Score",
   likert: "Likert scale",
   "image-choice": "Image choice",
   matrix: "Matrix grid",
@@ -56,6 +53,7 @@ const questionTypeLabels: Record<QuestionType, string> = {
   ranking: "Ranking",
   slider: "Slider",
   "date-time": "Date / Time",
+  captcha: "reCAPTCHA",
 };
 
 export default function BuilderToolbar({

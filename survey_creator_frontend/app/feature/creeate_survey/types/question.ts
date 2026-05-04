@@ -1,19 +1,18 @@
 export type QuestionType =
   | "single-choice"
   | "multiple-choice"
-  | "checkbox"
   | "short-text"
   | "long-text"
   | "rating-scale-5"
   | "rating-scale-10"
-  | "nps"
   | "likert"
   | "image-choice"
   | "matrix"
   | "yes-no"
   | "ranking"
   | "slider"
-  | "date-time";
+  | "date-time"
+  | "captcha";
 
 export interface QuestionOption {
   id: string;
