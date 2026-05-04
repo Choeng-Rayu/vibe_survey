@@ -59,6 +59,18 @@ Feature specs live in `.kiro/specs/*/requirements.md`:
 
 Design docs and tasks live alongside each spec in `design.md` and `tasks.md` where applicable.
 
+## Kiro Spec Execution Workflow
+
+When working on any task under `.kiro/specs/`, follow this order every time:
+1. Read `tasks.md` first to find the task id, title, sub-steps, and requirement ids.
+2. Read `requirements.md` next to extract all acceptance criteria for those ids.
+3. Read `design.md` last to follow the required interfaces, patterns, and file structure.
+4. Implement only the current task, matching the design patterns and criteria.
+5. Verify with the relevant lint/test/build commands for the area you changed.
+6. Update the task and sub-steps to `[x]` in `tasks.md` after verification passes.
+
+Reference prompt (optional): [.kiro/specs/kiro-task-execution.prompt.md](.kiro/specs/kiro-task-execution.prompt.md)
+
 ## Backend Architecture (NestJS)
 
 ### Module Organization (Domain-Driven)
@@ -131,6 +143,12 @@ backend/src/
 **Path Alias:** `@/*` maps to project root
 
 **Fonts:** Geist (default), Cormorant Garamond + DM Sans (design system)
+
+### Frontend Implementation Guidelines
+
+- Favor scalable, clean component architecture over quick fixes.
+- Reuse existing components before creating new ones.
+- When new UI is needed, design reusable components instead of one-off usage.
 
 ### survey_creator_frontend Specifics
 
@@ -217,6 +235,7 @@ backend/src/
 - `/api/v1/ws/*`, `/api/v1/sse/*` — Real-time notifications and analytics
 
 See full spec: `.kiro/specs/rest-api-design/unified-api-routes.md`
+All route endpoints are already designed in `unified-api-routes.md`.
 
 ## Integration Rules
 

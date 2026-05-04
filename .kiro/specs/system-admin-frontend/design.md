@@ -121,8 +121,8 @@ graph TB
 
 ### Technology Stack
 
-- **Frontend Framework**: Next.js 14 with App Router and TypeScript
-- **UI Framework**: React 18 with shadcn/ui component library
+- **Frontend Framework**: Next.js 16 with App Router and TypeScript
+- **UI Framework**: React 19 with shadcn/ui component library
 - **Styling**: Tailwind CSS with custom admin theme
 - **State Management**: 
   - Zustand for client-side state (UI state, role context)
