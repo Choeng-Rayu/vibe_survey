@@ -1,5 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 // Req 18.3, 18.4: Connection pooling and query optimization
 @Injectable()
@@ -7,7 +9,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
+    const pool = new Pool({ connectionString: process.env['DATABASE_URL'] });
     super({
+      adapter: new PrismaPg(pool as any),
       log:
         process.env['NODE_ENV'] === 'development'
           ? [{ emit: 'event', level: 'query' }, 'warn', 'error']
