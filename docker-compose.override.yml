@@ -1,0 +1,64 @@
+# =============================================================================
+# Docker Compose Override for Development
+# =============================================================================
+# This file is OPTIONAL and intended for DEVELOPMENT ONLY.
+# It is automatically picked up by docker-compose (or docker compose) when
+# present in the same directory as docker-compose.yml.
+#
+# Purpose:
+#   - Enables hot reload by mounting source code volumes
+#   - Runs services in development mode with watch/reload
+#   - Preserves node_modules in anonymous volumes to prevent overwrite
+#
+# Usage:
+#   docker-compose up        # Loads both docker-compose.yml AND this override
+#   docker-compose -f docker-compose.yml up  # Ignores this override
+#
+# For production, remove or rename this file.
+# =============================================================================
+
+version: "3.8"
+
+services:
+  backend:
+    command: npm run start:dev
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+
+  survey-creator:
+    command: npm run dev
+    volumes:
+      - ./survey_creator_frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    ports:
+      - "3001:3001"
+
+  survey-taker:
+    command: npm run dev
+    volumes:
+      - ./survey_taker_frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+    ports:
+      - "3002:3002"
+
+  admin:
+    command: npm run dev
+    volumes:
+      - ./admin_frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+    ports:
+      - "3003:3003"

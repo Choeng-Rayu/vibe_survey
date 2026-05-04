@@ -1,0 +1,145 @@
+# Vibe Survey - Docker Compose Configuration
+# Three-sided marketplace: Survey-as-Ads platform
+# Version: 3.8
+
+version: "3.8"
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+
+services:
+  # -----------------------------------------------------------------------------
+  # Backend Service (NestJS API)
+  # Port: 3000
+  # -----------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vibe-survey-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    # Healthcheck to ensure service is ready before dependents start
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - vibe-survey-network
+    # Named volume for node_modules to prevent conflicts with host
+    volumes:
+      - backend-node-modules:/app/node_modules
+
+  # -----------------------------------------------------------------------------
+  # Survey Creator Frontend (Next.js 16 - Advertiser Portal)
+  # Port: 3001
+  # Purpose: Campaign creation and management for advertisers
+  # -----------------------------------------------------------------------------
+  survey-creator:
+    build:
+      context: ./survey_creator_frontend
+      dockerfile: Dockerfile
+    container_name: vibe-survey-creator
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - API_URL=http://backend:3000
+    # Ensure backend is healthy before starting
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vibe-survey-network
+    # Named volume for node_modules to prevent conflicts with host
+    volumes:
+      - survey-creator-node-modules:/app/node_modules
+
+  # -----------------------------------------------------------------------------
+  # Survey Taker Frontend (Next.js 16 - User App)
+  # Port: 3002
+  # Purpose: Survey completion app for users with fraud detection
+  # -----------------------------------------------------------------------------
+  survey-taker:
+    build:
+      context: ./survey_taker_frontend
+      dockerfile: Dockerfile
+    container_name: vibe-survey-taker
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - API_URL=http://backend:3000
+    # Ensure backend is healthy before starting
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vibe-survey-network
+    # Named volume for node_modules to prevent conflicts with host
+    volumes:
+      - survey-taker-node-modules:/app/node_modules
+
+  # -----------------------------------------------------------------------------
+  # Admin Frontend (Next.js 16 - Admin Dashboard)
+  # Port: 3003
+  # Purpose: Platform administration and moderation
+  # -----------------------------------------------------------------------------
+  admin:
+    build:
+      context: ./admin_frontend
+      dockerfile: Dockerfile
+    container_name: vibe-survey-admin
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - API_URL=http://backend:3000
+    # Ensure backend is healthy before starting
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vibe-survey-network
+    # Named volume for node_modules to prevent conflicts with host
+    volumes:
+      - admin-node-modules:/app/node_modules
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+
+networks:
+  # Bridge network for internal service communication
+  vibe-survey-network:
+    driver: bridge
+    name: vibe-survey-network
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+
+volumes:
+  # Named volumes for node_modules to prevent conflicts with host
+  # and improve build performance
+  backend-node-modules:
+    name: vibe-survey-backend-node-modules
+  survey-creator-node-modules:
+    name: vibe-survey-creator-node-modules
+  survey-taker-node-modules:
+    name: vibe-survey-taker-node-modules
+  admin-node-modules:
+    name: vibe-survey-admin-node-modules

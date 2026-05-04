@@ -1,0 +1,9 @@
+{
+  "nav.home": "ទំព័រដើម",
+  "nav.login": "ចូល",
+  "nav.register": "ចុះឈ្មោះ",
+  "form.email": "អ៊ីមែល",
+  "form.password": "ពាក្យសម្ងាត់",
+  "form.phone": "ទូរស័ព្ទ",
+  "error.invalidCredentials": "ព័ត៌មានចុះឈ្មោះមិនត្រឹមត្រូវ"
+}
