@@ -20,34 +20,34 @@ import { AIAgentModeSchema } from './survey-canonical.schema.js';
 
 export const AIActionTypeSchema = z.enum([
   // Item operations (flat list CRUD)
-  'add_item',             // Add any item type (question, section, text, image, video)
-  'remove_item',          // Remove an item from the list
-  'update_item',          // Update item title/description
-  'duplicate_item',       // Duplicate an item
-  'reorder_items',        // Reorder items (drag-drop)
-  'move_item',            // Move item to a different position
+  'add_item', // Add any item type (question, section, text, image, video)
+  'remove_item', // Remove an item from the list
+  'update_item', // Update item title/description
+  'duplicate_item', // Duplicate an item
+  'reorder_items', // Reorder items (drag-drop)
+  'move_item', // Move item to a different position
 
   // Question-specific operations
   'update_question_type', // Change question type
   'update_question_config', // Update typeConfig
 
   // Option operations
-  'add_option',           // Add answer option to a question
-  'remove_option',        // Remove answer option
-  'update_option',        // Update option text/value/navigation
-  'reorder_options',      // Reorder options within a question
+  'add_option', // Add answer option to a question
+  'remove_option', // Remove answer option
+  'update_option', // Update option text/value/navigation
+  'reorder_options', // Reorder options within a question
 
   // Logic operations
-  'add_rule',             // Add a logic rule
-  'remove_rule',          // Remove a logic rule
-  'update_rule',          // Update a logic rule
+  'add_rule', // Add a logic rule
+  'remove_rule', // Remove a logic rule
+  'update_rule', // Update a logic rule
 
   // Settings operations
-  'update_settings',      // Update survey settings
-  'update_info',          // Update survey info/metadata
+  'update_settings', // Update survey settings
+  'update_info', // Update survey info/metadata
 
   // Bulk operations
-  'bulk_update',          // Apply multiple changes at once
+  'bulk_update', // Apply multiple changes at once
 ]);
 
 export type AIActionType = z.infer<typeof AIActionTypeSchema>;

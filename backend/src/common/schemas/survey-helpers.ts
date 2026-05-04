@@ -77,10 +77,7 @@ export function normalizeOrder<T extends { order: number }>(items: T[]): T[] {
 // ─── Item Lookup ─────────────────────────────────────────────────────────────
 
 /** Find an item by ID */
-export function findItem(
-  survey: CanonicalSurvey,
-  itemId: string,
-): SurveyItem | undefined {
+export function findItem(survey: CanonicalSurvey, itemId: string): SurveyItem | undefined {
   return survey.items.find((item) => item.itemId === itemId);
 }
 
@@ -140,10 +137,7 @@ export function getItemsBySection(survey: CanonicalSurvey): Array<{
  * Create a new empty survey with sensible defaults.
  * Starts with a single section_header + no questions (like a blank Google Form).
  */
-export function createEmptySurvey(
-  title: string,
-  userId: string,
-): CanonicalSurvey {
+export function createEmptySurvey(title: string, userId: string): CanonicalSurvey {
   const now = new Date().toISOString();
 
   return {
@@ -230,11 +224,7 @@ export function createSectionHeader(
 /**
  * Create a new text block item.
  */
-export function createTextBlock(
-  order: number,
-  title?: string,
-  content?: string,
-): SurveyItem {
+export function createTextBlock(order: number, title?: string, content?: string): SurveyItem {
   return {
     itemId: generateId(),
     order,
@@ -249,11 +239,7 @@ export function createTextBlock(
 /**
  * Create a new image item.
  */
-export function createImageItem(
-  order: number,
-  sourceUrl: string,
-  altText?: string,
-): SurveyItem {
+export function createImageItem(order: number, sourceUrl: string, altText?: string): SurveyItem {
   return {
     itemId: generateId(),
     order,
@@ -268,11 +254,7 @@ export function createImageItem(
 /**
  * Create a new video item.
  */
-export function createVideoItem(
-  order: number,
-  url: string,
-  caption?: string,
-): SurveyItem {
+export function createVideoItem(order: number, url: string, caption?: string): SurveyItem {
   return {
     itemId: generateId(),
     order,
@@ -287,10 +269,7 @@ export function createVideoItem(
 /**
  * Create a new answer option.
  */
-export function createOption(
-  text: string,
-  order: number,
-): QuestionOption {
+export function createOption(text: string, order: number): QuestionOption {
   return {
     id: generateId(),
     text,
