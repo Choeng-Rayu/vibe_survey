@@ -1,0 +1,9 @@
+{
+  "nav.home": "Home",
+  "nav.login": "Login",
+  "nav.register": "Register",
+  "form.email": "Email",
+  "form.password": "Password",
+  "form.phone": "Phone",
+  "error.invalidCredentials": "Invalid credentials"
+}
